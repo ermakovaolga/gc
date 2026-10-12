@@ -1,0 +1,955 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self'; form-action 'none'">
+<meta name="theme-color" content="#2f6f68">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="День за днём">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-180.png">
+<title>День за днём</title>
+<style>
+:root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+/* Layout: одна узкая колонка как карманная книжка; сверху счётчик дней, снизу панель вкладок */
+:root {
+  --bg: #eef1f0;
+  --surface: #ffffff;
+  --ink: #1d2b2a;
+  --muted: #5c6d6b;
+  --line: #d5dddb;
+  --accent: #2f6f68;
+  --accent-soft: #dcebe8;
+  --gold: #a87b2a;
+  --help: #b5473a;
+  --help-soft: #f6e3df;
+  --display: "Iowan Old Style", "Palatino Linotype", Palatino, "Noto Serif", Georgia, serif;
+  --body: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #121a19; --surface: #1a2524; --ink: #e3ecea; --muted: #97a9a6; --line: #2c3b39;
+    --accent: #6fbdb2; --accent-soft: #203a37; --gold: #d8ad5c; --help: #ec7f71; --help-soft: #3a2220;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #121a19; --surface: #1a2524; --ink: #e3ecea; --muted: #97a9a6; --line: #2c3b39;
+  --accent: #6fbdb2; --accent-soft: #203a37; --gold: #d8ad5c; --help: #ec7f71; --help-soft: #3a2220;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 16px; line-height: 1.5; }
+.wrap { max-width: 560px; margin: 0 auto; padding-inline: 16px; padding-block: 16px 120px; display: grid; gap: 16px; }
+h1, h2, h3 { font-family: var(--display); font-weight: 700; margin: 0; text-wrap: balance; line-height: 1.2; }
+h2 { font-size: 1.45rem; }
+h3 { font-size: 1.15rem; }
+p { margin: 0; }
+.muted { color: var(--muted); }
+.small { font-size: 0.875rem; }
+.eyebrow { font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 18px; display: grid; gap: 12px; min-width: 0; }
+.row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.between { justify-content: space-between; }
+
+button, .btn { font: inherit; cursor: pointer; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); padding: 10px 14px; }
+button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.primary { background: var(--accent); border-color: var(--accent); color: var(--surface); font-weight: 600; }
+.ghost { background: transparent; border-color: transparent; color: var(--accent); padding-inline: 6px; }
+input, textarea, select { font: inherit; color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; width: 100%; }
+textarea { resize: vertical; min-height: 64px; }
+label.field { display: grid; gap: 6px; font-size: 0.9rem; color: var(--muted); }
+
+/* счётчик */
+.counter { background: var(--accent); color: #fff; border: 0; padding: 22px 20px; border-radius: 18px; display: grid; gap: 6px; }
+.counter .eyebrow { color: rgba(255,255,255,0.75); }
+.counter .num { font-family: var(--display); font-size: clamp(3.4rem, 18vw, 5rem); line-height: 1; font-variant-numeric: tabular-nums; }
+.counter .unit { font-family: var(--display); font-size: 1.4rem; }
+.counter .meta { color: rgba(255,255,255,0.85); font-size: 0.95rem; }
+.counter .bar { height: 6px; background: rgba(255,255,255,0.25); border-radius: 3px; overflow: hidden; }
+.counter .bar i { display: block; height: 100%; background: #fff; border-radius: 3px; }
+:root[data-theme="dark"] .counter, :root[data-theme="dark"] .counter .num { color: #0f1d1b; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .counter { color: #0f1d1b; } }
+:root[data-theme="dark"] .counter .eyebrow, :root[data-theme="dark"] .counter .meta { color: rgba(15,29,27,0.75); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .counter .eyebrow, :root:not([data-theme="light"]) .counter .meta { color: rgba(15,29,27,0.75); } }
+
+.help-btn { background: var(--help); border-color: var(--help); color: #fff; font-weight: 600; font-size: 1.05rem; padding: 14px; border-radius: 14px; width: 100%; }
+
+.check { display: flex; gap: 10px; align-items: flex-start; padding: 8px 0; border-top: 1px solid var(--line); }
+.check:first-of-type { border-top: 0; }
+.check input { width: 20px; height: 20px; margin-top: 2px; flex: none; accent-color: var(--accent); }
+.status { font-size: 0.8rem; padding: 3px 9px; border-radius: 999px; background: var(--bg); color: var(--muted); border: 1px solid var(--line); white-space: nowrap; }
+.status.done { background: var(--accent-soft); color: var(--accent); border-color: transparent; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { padding: 6px 12px; border-radius: 999px; font-size: 0.9rem; }
+.chip[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
+.q { display: grid; gap: 6px; }
+.q span { font-size: 0.95rem; }
+.q.sub { padding-left: 14px; border-left: 2px solid var(--line); }
+.report { display: grid; gap: 10px; padding-top: 4px; }
+.report textarea { font-size: 0.9rem; background: var(--bg); }
+.report .btn { text-decoration: none; font-size: 0.9rem; }
+.send-link { text-decoration: none; text-align: center; }
+
+/* календарь */
+.cal { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; text-align: center; }
+.cal .dow { font-size: 0.75rem; color: var(--muted); padding-bottom: 4px; }
+.cal button { padding: 6px 0 4px; border-radius: 8px; display: grid; gap: 2px; justify-items: center; font-variant-numeric: tabular-nums; min-height: 48px; }
+.cal button.out { visibility: hidden; }
+.cal button.today { border-color: var(--accent); border-width: 2px; }
+.cal button.s3 { background: var(--accent-soft); }
+.dots { display: flex; gap: 3px; height: 6px; }
+.dots i { width: 6px; height: 6px; border-radius: 50%; }
+.d-m { background: var(--gold); } .d-e { background: var(--accent); } .d-j { background: var(--muted); }
+.legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: 0.85rem; color: var(--muted); }
+.legend span { display: inline-flex; gap: 6px; align-items: center; }
+.legend i { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+
+.contact { display: flex; gap: 10px; align-items: center; justify-content: space-between; padding: 10px 0; border-top: 1px solid var(--line); flex-wrap: wrap; }
+.contact:first-child { border-top: 0; }
+.contact .who { min-width: 0; }
+.contact .phone { font-variant-numeric: tabular-nums; user-select: all; }
+.entry { border-top: 1px solid var(--line); padding-top: 10px; display: grid; gap: 4px; }
+.entry:first-child { border-top: 0; padding-top: 0; }
+.entry p { white-space: pre-wrap; overflow-wrap: anywhere; }
+
+/* нижняя навигация */
+nav.tabs { position: fixed; left: 0; right: 0; bottom: 0; background: var(--surface); border-top: 1px solid var(--line); padding-bottom: env(safe-area-inset-bottom, 0px); z-index: 5; }
+nav.tabs .in { max-width: 560px; margin: 0 auto; display: grid; grid-template-columns: repeat(4, 1fr); }
+nav.tabs button { border: 0; border-radius: 0; background: transparent; padding: 12px 4px; font-size: 0.85rem; color: var(--muted); }
+nav.tabs button[aria-current="true"] { color: var(--accent); font-weight: 600; box-shadow: inset 0 3px 0 var(--accent); }
+
+/* экран помощи */
+.overlay { position: fixed; inset: 0; background: var(--bg); z-index: 10; overflow-y: auto; padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+.overlay .wrap { padding-block: 20px 40px; }
+.step-n { font-family: var(--display); font-size: 1.6rem; color: var(--help); line-height: 1; min-width: 1.4em; }
+.help-step { display: flex; gap: 12px; align-items: flex-start; }
+.help-card { border-color: var(--help); background: var(--help-soft); }
+.toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(80px + env(safe-area-inset-bottom, 0px)); background: var(--ink); color: var(--bg); padding: 8px 14px; border-radius: 999px; font-size: 0.9rem; z-index: 20; }
+html, body { margin: 0; }
+body.covered #app, body.covered nav.tabs { visibility: hidden; }
+.lock-box { max-width: 340px; margin: 18vh auto 0; padding-inline: 16px; display: grid; gap: 14px; text-align: center; }
+.lock-box input { text-align: center; font-size: 1.6rem; letter-spacing: 0.4em; }
+.banner { border-color: var(--gold); }
+.danger { color: var(--help); border-color: var(--help); background: transparent; }
+@media (prefers-reduced-motion: no-preference) { .card, .counter { transition: border-color .2s; } }
+</style>
+</head>
+<body>
+
+
+<div class="wrap" id="app"></div>
+
+<nav class="tabs" aria-label="Разделы">
+  <div class="in">
+    <button id="tab-today" data-tab="today">Сегодня</button>
+    <button id="tab-journal" data-tab="journal">10 шаг</button>
+    <button id="tab-calendar" data-tab="calendar">Календарь</button>
+    <button id="tab-support" data-tab="support">Поддержка</button>
+  </div>
+</nav>
+
+<div class="overlay" id="help" hidden></div>
+<div class="toast" id="toast" hidden></div>
+<div class="overlay" id="lock" hidden></div>
+
+<script>
+(() => {
+  // ---------- даты ----------
+  const pad = n => String(n).padStart(2, "0");
+  const ymd = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  const todayStr = () => ymd(new Date());
+  const toUTC = s => { const [y, m, d] = s.split("-").map(Number); return Date.UTC(y, m - 1, d); };
+  const daysBetween = (a, b) => Math.round((toUTC(b) - toUTC(a)) / 86400000);
+  const MONTHS_GEN = ["января","февраля","марта","апреля","мая","июня","июля","августа","сентября","октября","ноября","декабря"];
+  const MONTHS = ["Январь","Февраль","Март","Апрель","Май","Июнь","Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь"];
+  const human = s => { const [y, m, d] = s.split("-").map(Number); return `${d} ${MONTHS_GEN[m - 1]} ${y}`; };
+  const plural = (n, one, few, many) => { const a = Math.abs(n) % 100, b = a % 10; if (a > 10 && a < 20) return many; if (b > 1 && b < 5) return few; if (b === 1) return one; return many; };
+  function ymdParts(from, to) {
+    const [y1, m1, d1] = from.split("-").map(Number), [y2, m2, d2] = to.split("-").map(Number);
+    let y = y2 - y1, m = m2 - m1, d = d2 - d1;
+    if (d < 0) { m--; d += new Date(y2, m2 - 1, 0).getDate(); }
+    if (m < 0) { y--; m += 12; }
+    return { y, m, d };
+  }
+  const MILESTONES = [1, 7, 14, 30, 60, 90, 100, 180, 200, 300, 365, 500, 730, 1000, 1095, 1461, 1500, 1826, 2000, 2500, 3000, 3650, 5000, 7300, 10000];
+
+  // ---------- содержание 11-го шага (пересказ, Большая книга, гл. 6 «В действии», с. 86–88) ----------
+  const MORNING = [
+    "Подумать о предстоящем дне и о своих планах на него",
+    "Попросить Бога направлять мои мысли и освободить их от жалости к себе, нечестных и корыстных побуждений",
+    "Когда не знаю, как поступить, попросить вдохновения, интуитивной мысли или решения",
+    "Попросить показать, каким должен быть мой следующий шаг, и дать всё нужное для этого",
+    "Закончить просьбой: «Да будет воля Твоя, а не моя»",
+  ];
+  const DAY_PAUSE = [
+    "Остановиться, когда я взволнован(а) или сомневаюсь",
+    "Попросить верную мысль или правильное действие",
+    "Напомнить себе: я больше не управляю шоу",
+    "Сказать про себя: «Да будет воля Твоя»",
+  ];
+  // Вечерний отчёт. list: каждая строка в отчёте становится пунктом «- …»; sub: подпункт первого вопроса
+  const EV_INTRO = "Когда мы ложимся спать, мы конструктивно оцениваем прожитый день.";
+  const EVENING = [
+    { k: "wrong", q: "Не были ли мы в течение дня злобными, эгоистичными или бесчестными?", ph: "Была / Был / Нет", rows: 1 },
+    { k: "anger", q: "Злобы", list: true, sub: true, ph: "раздражение на служащих" },
+    { k: "fears", q: "Страхи", list: true, sub: true },
+    { k: "dishonesty", q: "Нечестность", list: true, sub: true },
+    { k: "selfish", q: "Эгоизм", list: true, sub: true },
+    { k: "amends", q: "Нужно ли перед кем-нибудь извиниться?" },
+    { k: "hidden", q: "Не затаили ли мы что-то про себя, что следует немедленно обсудить с кем-то?" },
+    { k: "love", q: "Проявляли ли мы любовь и доброту ко всем окружающим?", list: true, ph: "каждый пункт с новой строки" },
+    { k: "better", q: "Что мы могли бы сделать лучше?" },
+    { k: "flow", q: "Были ли мы в потоке жизни?", hint: "Опиши, что происходило: думала ли ты сегодня в основном о себе или о других, кому помогла, что со спонсируемыми", rows: 4 },
+    { k: "grateful", q: "Благодарность", ph: "за жизнь, за семью…" },
+  ];
+  const MOODS = ["спокойствие", "благодарность", "тревога", "страх", "обида", "злость", "усталость", "надежда"];
+
+  // ---------- хранилище ----------
+  const LS = "dzd:";
+  const ls = {
+    get(k) { try { const v = localStorage.getItem(LS + k); return v ? JSON.parse(v) : null; } catch { return null; } },
+    set(k, v) { try { localStorage.setItem(LS + k, JSON.stringify(v)); } catch {} },
+    keys() { try { return Object.keys(localStorage).filter(k => k.startsWith(LS)).map(k => k.slice(LS.length)); } catch { return []; } },
+  };
+  const state = { profile: { step3: "", contacts: [], name: "" }, days: {}, tab: "today", sel: todayStr(), calMonth: null, loaded: false };
+
+  function loadLocal() {
+    state.profile = Object.assign({ step3: "", contacts: [] }, ls.get("profile") || {});
+    for (const k of ls.keys()) if (k.startsWith("d-")) state.days[k.slice(2)] = ls.get(k);
+  }
+  function saveDoc(key, value, delay = 700) {
+    value.updatedAt = Date.now();
+    ls.set(key, value);
+  }
+  const saveProfile = () => saveDoc("profile", state.profile, 300);
+  const dayData = date => {
+    const d = state.days[date] || (state.days[date] = { date });
+    return Object.assign(d, { date, morning: d.morning || {}, morningNote: d.morningNote || "", pauses: d.pauses || 0, evening: d.evening || {}, journal: d.journal || "", moods: d.moods || [], tenth: Array.isArray(d.tenth) ? d.tenth : [] });
+  };
+  const saveDay = date => saveDoc("d-" + date, state.days[date]);
+  const hasMorning = d => d && (Object.values(d.morning || {}).some(Boolean) || (d.morningNote || "").trim());
+  const hasEvening = d => d && Object.entries(d.evening || {}).some(([k, v]) => k !== "sponsees" && k !== "spCount" && String(v ?? "").trim());
+  const hasJournal = d => d && ((d.journal || "").trim() || (Array.isArray(d.tenth) && d.tenth.length));
+
+  // ---------- интерфейс ----------
+  const app = document.getElementById("app");
+  const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  let toastT;
+  function toast(msg) { const t = document.getElementById("toast"); t.textContent = msg; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => t.hidden = true, 2600); }
+
+  function counterHTML() {
+    const s3 = state.profile.step3, today = todayStr();
+    if (!s3) return `
+      <section class="card">
+        <p class="eyebrow">С чего начать</p>
+        <h2>Дата вашего третьего шага</h2>
+        <p class="muted">От этой даты приложение будет каждый день считать, сколько дней вы живёте по программе.</p>
+        <label class="field" for="s3-first">Дата третьего шага
+          <input type="date" id="s3-first" max="${today}">
+        </label>
+        <button class="primary" id="s3-save">Начать отсчёт</button>
+      </section>`;
+    const n = daysBetween(s3, today);
+    if (n < 0) return `<section class="counter"><p class="eyebrow">Третий шаг</p><p class="unit">Дата ${human(s3)} ещё впереди</p><p class="meta">Изменить её можно в разделе «Поддержка».</p></section>`;
+    const p = ymdParts(s3, today);
+    const parts = [];
+    if (p.y) parts.push(`${p.y} ${plural(p.y, "год", "года", "лет")}`);
+    if (p.m) parts.push(`${p.m} ${plural(p.m, "месяц", "месяца", "месяцев")}`);
+    if (p.d || !parts.length) parts.push(`${p.d} ${plural(p.d, "день", "дня", "дней")}`);
+    const next = MILESTONES.find(m => m > n) || (Math.floor(n / 365) + 1) * 365;
+    const prev = [...MILESTONES].reverse().find(m => m <= n) || 0;
+    const pct = Math.max(4, Math.min(100, ((n - prev) / (next - prev)) * 100));
+    const left = next - n;
+    return `
+      <section class="counter" aria-label="Дни трезвости">
+        <p class="eyebrow">Сегодня, ${human(today)}</p>
+        <div class="row" style="align-items: baseline; gap: 10px">
+          <span class="num">${n.toLocaleString("ru-RU")}</span>
+          <span class="unit">${plural(n, "день", "дня", "дней")} трезвости</span>
+        </div>
+        <p class="meta">${parts.join(" ")} · третий шаг ${human(s3)}</p>
+        <div class="bar" aria-hidden="true"><i style="width:${pct}%"></i></div>
+        <p class="meta small">До ${next.toLocaleString("ru-RU")} ${plural(next, "дня", "дней", "дней")}: ещё ${left} ${plural(left, "день", "дня", "дней")}</p>
+      </section>`;
+  }
+
+  function dayHeader() {
+    const isToday = state.sel === todayStr();
+    return isToday ? "" : `
+      <div class="card row between" style="padding: 12px 16px">
+        <span>Запись за <b>${human(state.sel)}</b></span>
+        <button class="ghost" id="back-today">К сегодняшнему дню</button>
+      </div>`;
+  }
+
+  function viewToday() {
+    const d = dayData(state.sel);
+    const mDone = hasMorning(d), eDone = hasEvening(d);
+    return `
+      ${counterHTML()}
+      ${backupBanner()}
+      <button class="help-btn" id="open-help">Мне нужна помощь</button>
+      ${dayHeader()}
+      <section class="card">
+        <div class="row between"><h2>Утро · 11-й шаг</h2><span class="status ${mDone ? "done" : ""}">${mDone ? "сделано" : "не начато"}</span></div>
+        <p class="muted small">Прежде чем начать день</p>
+        <div>${MORNING.map((t, i) => `
+          <label class="check" for="m${i}"><input type="checkbox" id="m${i}" data-m="${i}" ${d.morning[i] ? "checked" : ""}><span>${t}</span></label>`).join("")}
+        </div>
+        <label class="field" for="m-note">Мой план и просьба на сегодня
+          <textarea id="m-note" rows="3" placeholder="Что сегодня важно? О чём я прошу?">${esc(d.morningNote)}</textarea>
+        </label>
+      </section>
+
+      <section class="card">
+        <div class="row between"><h2>В течение дня</h2><span class="status ${d.pauses ? "done" : ""}">${d.pauses} ${plural(d.pauses, "пауза", "паузы", "пауз")}</span></div>
+        <ul class="small" style="margin:0; padding-left: 1.2em; display:grid; gap:4px">${DAY_PAUSE.map(t => `<li>${t}</li>`).join("")}</ul>
+        <div class="row">
+          <button class="primary" id="pause">Я сделал(а) паузу</button>
+          ${d.pauses ? `<button class="ghost" id="unpause">Отменить</button>` : ""}
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="row between"><h2>Вечерний отчёт</h2><span class="status ${eDone ? "done" : ""}">${eDone ? "сделано" : "не начато"}</span></div>
+        <p class="muted small">${EV_INTRO}</p>
+        ${state.profile.name ? "" : `<p class="small muted">Имя и город для шапки отчёта укажите в разделе «Поддержка» → «Настройки».</p>`}
+        ${EVENING.map(f => `
+          <label class="q ${f.sub ? "sub" : ""}" for="e-${f.k}"><span>${f.q}${f.list && !f.q.endsWith("?") ? ":" : ""}</span>
+            ${f.hint ? `<small class="muted">${f.hint}</small>` : ""}
+            <textarea id="e-${f.k}" data-e="${f.k}" rows="${f.rows || 2}" placeholder="${esc(f.ph || "")}">${esc(d.evening[f.k])}</textarea>
+          </label>`).join("")}
+        <div class="row" style="align-items: end">
+          <label class="field" for="e-tenth" style="flex: 0 0 120px">10-х шагов
+            <input id="e-tenth" data-e="tenth" type="number" min="0" inputmode="numeric" value="${esc(d.evening.tenth ?? (tenthCount(d) || ""))}">
+          </label>
+          <label class="field" for="e-sp-count" style="flex: 0 0 140px">Подспонсорных
+            <input id="e-sp-count" data-e="spCount" type="number" min="0" inputmode="numeric" value="${esc(evVal(d, "spCount"))}">
+          </label>
+        </div>
+        <label class="q" for="e-sponsees"><span>Подспонсорные</span>
+          <small class="muted">Список переносится из прошлого отчёта, поправьте при необходимости</small>
+          <textarea id="e-sponsees" data-e="sponsees" rows="3" placeholder="Татьяна В, Виктория А, …">${esc(evVal(d, "sponsees"))}</textarea>
+        </label>
+        ${sendBtn("send-report", "Отправить отчёт спонсору", true)}
+        <div id="report-out"></div>
+      </section>`;
+  }
+
+  // Подспонсорные переносятся из последнего отчёта, пока в этом дне их не поменяли
+  function evVal(d, k) {
+    if (d.evening[k] !== undefined) return d.evening[k];
+    const prev = Object.values(state.days).filter(x => x && x.date < d.date && x.evening && x.evening[k] !== undefined && x.evening[k] !== "").sort((a, b) => b.date.localeCompare(a.date))[0];
+    return prev ? prev.evening[k] : "";
+  }
+
+  function buildReport(d) {
+    const p = state.profile, e = d.evening;
+    const [y, m, dd] = d.date.split("-").map(Number);
+    const val = k => (e[k] || "").trim();
+    const asList = k => { const lines = val(k).split("\n").map(s => s.trim()).filter(Boolean); return lines.length ? lines.map(s => /^[-–—•]/.test(s) ? s : "- " + s).join("\n") : "-"; };
+    const out = ["Вечерний отчет"];
+    const who = [p.name, p.city].filter(Boolean).join(", ");
+    if (who) out.push(who);
+    out.push(`за ${dd}.${pad(m)}.${y}`, "", EV_INTRO);
+    for (const f of EVENING) {
+      if (f.k === "grateful") continue;
+      out.push(f.list && !f.q.endsWith("?") ? `${f.q}:` : f.q, f.list ? asList(f.k) : (val(f.k) || "-"), "");
+    }
+    if (out[out.length - 1] === "") out.pop();
+    if (val("grateful")) out.push("", `${p.gender === "m" ? "Благодарен" : "Благодарна"} за ${val("grateful").replace(/^за\s+/i, "")}`);
+    const tenth = String(e.tenth ?? (tenthCount(d) || "")).trim();
+    if (tenth) out.push("", `Количество 10-х: ${tenth}`);
+    const spC = String(evVal(d, "spCount") || "").trim(), spL = String(evVal(d, "sponsees") || "").trim();
+    if (spC || spL) out.push("", `Подспонсорных${spC ? " " + spC : ""}${spL ? ": " + spL.replace(/\n+/g, ", ") : ""}`);
+    return out.join("\n");
+  }
+
+  function reportPanel(text) {
+    const sponsor = (state.profile.contacts || []).find(c => c.role === "спонсор");
+    const links = [];
+    // Telegram открывается самой кнопкой отправки
+    if (sponsor && sponsor.phone) links.push(`<a class="btn" href="https://wa.me/${esc(sponsor.phone.replace(/\D/g, ""))}?text=${encodeURIComponent(text)}" target="_blank" rel="noopener">Отправить в WhatsApp</a>`);
+    if (sponsor && sponsor.gem) links.push(`<span class="small">GemSpace: <b class="phone">${esc(sponsor.gem)}</b></span>`);
+    return `
+      <div class="report">
+        <p class="small">${sponsorTg() ? "<b>Отчёт скопирован, чат со спонсором открыт в Telegram.</b> Если текст не появился в поле сообщения сам, вставьте его: он в буфере обмена." : "<b>Текст отчёта скопирован.</b> Откройте чат со спонсором и вставьте его."}</p>
+        <textarea id="report-text" rows="10" readonly>${esc(text)}</textarea>
+        <div class="row">
+          <button id="copy-report">Скопировать ещё раз</button>
+          ${links.join("")}
+        </div>
+        ${sponsor ? "" : `<p class="muted small">Добавьте спонсора в разделе «Поддержка», чтобы здесь появились ссылки на его Telegram или WhatsApp.</p>`}
+      </div>`;
+  }
+
+  // Если у спонсора есть Telegram, кнопка становится ссылкой на его чат; текст подставляется в момент нажатия
+  const sponsorTg = () => { const sp = (state.profile.contacts || []).find(c => c.role === "спонсор" && c.tg); return sp ? sp.tg.replace(/^@/, "") : ""; };
+  function prepTg(el, text) {
+    if (el.tagName === "A") el.href = `https://t.me/${sponsorTg()}?text=${encodeURIComponent(text)}`;
+  }
+  function sendBtn(id, label, primary) {
+    const tg = sponsorTg();
+    return tg
+      ? `<a class="btn ${primary ? "primary" : ""} send-link" id="${id}" href="https://t.me/${esc(tg)}" target="_blank" rel="noopener">${label} в Telegram</a>`
+      : `<button class="${primary ? "primary" : ""}" id="${id}">${label}</button>`;
+  }
+
+  async function copyText(text, okMsg) {
+    try { await navigator.clipboard.writeText(text); toast(okMsg); return true; }
+    catch { const t = document.getElementById("report-text"); if (t) { t.focus(); t.select(); } toast("Текст выделен. Скопируйте его вручную"); return false; }
+  }
+
+  // ---------- 10 шаг: много записей за день ----------
+  const TEN_KINDS = ["Злоба", "Страх", "Нечестность", "Эгоизм"];
+  const TEN_ACTIONS = ["Молитва об избавлении", "Обсуждение с кем-то", "Извинение / исправление", "Помощь другому"];
+  const newDraft = () => ({ what: "", kinds: [], part: "", actions: [] });
+  state.draft = newDraft();
+  const tenthCount = d => (d && Array.isArray(d.tenth) ? d.tenth.length : 0);
+  const nowTime = () => { const n = new Date(); return `${pad(n.getHours())}:${pad(n.getMinutes())}`; };
+
+  function tenthEntryText(x) {
+    const out = [`${x.time}${x.kinds && x.kinds.length ? " · " + x.kinds.join(", ") : ""}`];
+    if (x.what) out.push(`Что произошло: ${x.what}`);
+    if (x.part) out.push(`Моя часть: ${x.part}`);
+    if (x.actions && x.actions.length) out.push(`Что сделано: ${x.actions.join(", ").toLowerCase()}`);
+    return out.join("\n");
+  }
+  function buildTenthReport(d) {
+    const [y, m, dd] = d.date.split("-").map(Number);
+    const who = [state.profile.name, state.profile.city].filter(Boolean).join(", ");
+    const list = [...d.tenth].sort((a, b) => a.time.localeCompare(b.time));
+    return [`10 шаг`, ...(who ? [who] : []), `за ${dd}.${pad(m)}.${y}`, `Количество: ${list.length}`, "", list.map(tenthEntryText).join("\n\n")].join("\n");
+  }
+
+  function viewJournal() {
+    const d = dayData(state.sel), dr = state.draft;
+    const list = [...d.tenth].sort((a, b) => b.time.localeCompare(a.time));
+    const n = list.length;
+    const past = Object.values(state.days).filter(x => x && x.date !== state.sel && (tenthCount(x) || (x.journal || "").trim())).sort((a, b) => b.date.localeCompare(a.date)).slice(0, 14);
+    return `
+      ${dayHeader()}
+      <section class="card">
+        <div class="row between"><h2>Новая запись 10 шага</h2><span class="status ${n ? "done" : ""}">${n} за ${state.sel === todayStr() ? "сегодня" : "день"}</span></div>
+        <p class="muted small">Продолжаем следить за эгоизмом, нечестностью, обидой и страхом. Когда они появляются, сразу просим Бога убрать их, обсуждаем с кем-то, быстро исправляем вред и обращаемся к тому, кому можем помочь.</p>
+        <label class="q" for="t-what"><span>Что произошло?</span>
+          <textarea id="t-what" data-t="what" rows="3" placeholder="коротко о ситуации">${esc(dr.what)}</textarea>
+        </label>
+        <div class="field">Что поднялось
+          <div class="chips">${TEN_KINDS.map(k => `<button class="chip" data-kind="${k}" aria-pressed="${dr.kinds.includes(k)}">${k}</button>`).join("")}</div>
+        </div>
+        <label class="q" for="t-part"><span>Моя часть</span>
+          <textarea id="t-part" data-t="part" rows="2" placeholder="где я была неправа, чего хотела">${esc(dr.part)}</textarea>
+        </label>
+        <div class="field">Что сделано
+          <div class="chips">${TEN_ACTIONS.map(k => `<button class="chip" data-act="${k}" aria-pressed="${dr.actions.includes(k)}">${k}</button>`).join("")}</div>
+        </div>
+        <button class="primary" id="t-add">Записать</button>
+      </section>
+
+      <section class="card">
+        <div class="row between"><h2>Записи за ${state.sel === todayStr() ? "сегодня" : human(state.sel)}</h2>${n ? sendBtn("t-send", "Отправить спонсору") : ""}</div>
+        <div id="report-out"></div>
+        ${n ? `<div style="display:grid; gap:12px">${list.map(x => `
+          <div class="entry">
+            <div class="row between"><b>${esc(x.time)}${x.kinds.length ? ` <span class="muted small">· ${esc(x.kinds.join(", "))}</span>` : ""}</b><button class="ghost small" data-tdel="${x.id}">Удалить</button></div>
+            ${x.what ? `<p>${esc(x.what)}</p>` : ""}
+            ${x.part ? `<p class="small"><span class="muted">Моя часть:</span> ${esc(x.part)}</p>` : ""}
+            ${x.actions.length ? `<p class="small"><span class="muted">Сделано:</span> ${esc(x.actions.join(", ").toLowerCase())}</p>` : ""}
+          </div>`).join("")}</div>` : `<p class="muted">Записей пока нет. Каждая новая запись появится здесь, и их число попадёт в вечерний отчёт.</p>`}
+        ${(d.journal || "").trim() ? `<div class="entry"><span class="muted small">Из старого дневника</span><p>${esc(d.journal)}</p></div>` : ""}
+      </section>
+
+      <section class="card">
+        <h3>Прошлые дни</h3>
+        ${past.length ? `<div style="display:grid; gap:10px">${past.map(x => `
+          <div class="entry">
+            <div class="row between"><b>${human(x.date)}</b><button class="ghost small" data-open="${x.date}">${tenthCount(x)} ${plural(tenthCount(x), "запись", "записи", "записей")}</button></div>
+            ${tenthCount(x) ? `<p class="small muted">${esc((x.tenth[x.tenth.length - 1].what || "").slice(0, 140))}</p>` : ""}
+          </div>`).join("")}</div>` : `<p class="muted">Здесь появятся записи за прошлые дни.</p>`}
+      </section>`;
+  }
+
+  function viewCalendar() {
+    const t = todayStr();
+    const [cy, cm] = (state.calMonth || t.slice(0, 7)).split("-").map(Number);
+    const first = new Date(cy, cm - 1, 1);
+    const offset = (first.getDay() + 6) % 7;
+    const len = new Date(cy, cm, 0).getDate();
+    const cells = [];
+    for (let i = 0; i < offset; i++) cells.push(`<button class="out" tabindex="-1" aria-hidden="true"></button>`);
+    let mCount = 0, eCount = 0;
+    for (let day = 1; day <= len; day++) {
+      const ds = `${cy}-${pad(cm)}-${pad(day)}`, d = state.days[ds];
+      const m = hasMorning(d), e = hasEvening(d), j = hasJournal(d);
+      if (m) mCount++; if (e) eCount++;
+      const future = ds > t;
+      cells.push(`<button data-day="${ds}" class="${ds === t ? "today" : ""} ${ds === state.profile.step3 ? "s3" : ""}" ${future ? "disabled" : ""} aria-label="${human(ds)}">
+        <span>${day}</span><span class="dots">${m ? '<i class="d-m"></i>' : ""}${e ? '<i class="d-e"></i>' : ""}${j ? '<i class="d-j"></i>' : ""}</span></button>`);
+    }
+    const s3 = state.profile.step3;
+    const monthEnd = `${cy}-${pad(cm)}-${pad(len)}`;
+    const dayNum = s3 && monthEnd >= s3 ? daysBetween(s3, monthEnd < t ? monthEnd : t) : null;
+    return `
+      <section class="card">
+        <div class="row between">
+          <button id="cal-prev" aria-label="Предыдущий месяц">‹</button>
+          <h2>${MONTHS[cm - 1]} ${cy}</h2>
+          <button id="cal-next" aria-label="Следующий месяц">›</button>
+        </div>
+        <div class="cal">${["Пн","Вт","Ср","Чт","Пт","Сб","Вс"].map(x => `<span class="dow">${x}</span>`).join("")}${cells.join("")}</div>
+        <div class="legend"><span><i class="d-m"></i>утро</span><span><i class="d-e"></i>вечер</span><span><i class="d-j"></i>10 шаг</span></div>
+      </section>
+      <section class="card">
+        <h3>За этот месяц</h3>
+        <p>Утренний 11-й шаг: <b>${mCount}</b> ${plural(mCount, "день", "дня", "дней")} · вечерний: <b>${eCount}</b></p>
+        ${dayNum !== null && dayNum >= 0 ? `<p class="muted small">На конец месяца: ${dayNum} ${plural(dayNum, "день", "дня", "дней")} от третьего шага</p>` : ""}
+        <p class="muted small">Нажмите на день, чтобы открыть или дополнить его записи.</p>
+      </section>`;
+  }
+
+  function viewSupport() {
+    const c = state.profile.contacts || [];
+    return `
+      <button class="help-btn" id="open-help">Мне нужна помощь</button>
+      <section class="card">
+        <h2>Мои контакты поддержки</h2>
+        ${c.length ? `<div>${c.map((x, i) => `
+          <div class="contact">
+            <div class="who"><b>${esc(x.name)}</b>${x.role ? ` <span class="muted small">· ${esc(x.role)}</span>` : ""}${contactLines(x)}</div>
+            <div class="row"><button class="small" data-copy="${i}">Копировать</button><button class="ghost small" data-del="${i}" aria-label="Удалить ${esc(x.name)}">Удалить</button></div>
+          </div>`).join("")}</div>` : `<p class="muted">Добавьте спонсора и нескольких человек из группы, кому можно позвонить или написать в трудную минуту.</p>`}
+        <form id="c-form" style="display:grid; gap:8px">
+          <input id="c-name" placeholder="Имя" required>
+          <input id="c-phone" placeholder="Телефон" inputmode="tel">
+          <div class="row">
+            <input id="c-tg" placeholder="Ник в Telegram" autocapitalize="off" style="flex: 1 1 140px">
+            <input id="c-gem" placeholder="Ник в GemSpace" autocapitalize="off" style="flex: 1 1 140px">
+          </div>
+          <p class="muted small">Достаточно одного: телефона или ника.</p>
+          <select id="c-role">
+            <option value="спонсор">Спонсор</option>
+            <option value="группа" selected>Из группы</option>
+            <option value="подопечный">Подопечный</option>
+            <option value="друг">Друг</option>
+          </select>
+          <button class="primary" type="submit">Добавить контакт</button>
+        </form>
+      </section>
+      <section class="card">
+        <h2>Настройки</h2>
+        <div class="row">
+          <label class="field" for="p-name" style="flex: 1 1 140px">Имя для отчёта
+            <input id="p-name" value="${esc(state.profile.name)}" placeholder="Ольга">
+          </label>
+          <label class="field" for="p-city" style="flex: 1 1 140px">Город
+            <input id="p-city" value="${esc(state.profile.city)}" placeholder="Санкт-Петербург">
+          </label>
+        </div>
+        <label class="field" for="p-gender">В отчёте писать
+          <select id="p-gender">
+            <option value="f" ${state.profile.gender !== "m" ? "selected" : ""}>«Благодарна за…»</option>
+            <option value="m" ${state.profile.gender === "m" ? "selected" : ""}>«Благодарен за…»</option>
+          </select>
+        </label>
+        <label class="field" for="s3-edit">Дата третьего шага
+          <input type="date" id="s3-edit" value="${esc(state.profile.step3)}" max="${todayStr()}">
+        </label>
+        <p class="muted small">Напоминания: поставьте на телефоне три будильника — утром, днём и перед сном, — с подписью «11-й шаг».</p>
+      </section>
+      ${privacyHTML()}`;
+  }
+
+  function contactLines(x) {
+    const lines = [];
+    if (x.phone) lines.push(`<a class="phone" href="tel:${esc(x.phone.replace(/[^\d+]/g, ""))}">${esc(x.phone)}</a>`);
+    if (x.tg) lines.push(`<a href="https://t.me/${esc(x.tg)}" target="_blank" rel="noopener">Telegram: @${esc(x.tg)}</a>`);
+    if (x.gem) lines.push(`<span>GemSpace: <span class="phone">${esc(x.gem)}</span></span>`);
+    return lines.map(l => `<br>${l}`).join("");
+  }
+  const contactText = x => [x.phone, x.tg && "@" + x.tg, x.gem && "GemSpace: " + x.gem].filter(Boolean).join(", ");
+
+  function helpHTML() {
+    const c = state.profile.contacts || [];
+    return `<div class="wrap">
+      <div class="row between"><p class="eyebrow">Мне нужна помощь</p><button id="close-help">Закрыть</button></div>
+      <h1 style="font-size: 2rem">Остановись. Ты не один(на).</h1>
+      <section class="card help-card">
+        <div class="help-step"><span class="step-n">1</span><p>Сделай три медленных вдоха и выдоха. Не нужно ничего решать прямо сейчас.</p></div>
+        <div class="help-step"><span class="step-n">2</span><p>Вспомни третий шаг: я решил(а) препоручить свою волю и свою жизнь Богу, как я Его понимаю. Скажи: «Да будет воля Твоя, а не моя».</p></div>
+        <div class="help-step"><span class="step-n">3</span><p>Спроси себя: что здесь моё, а что не моё? Я не могу контролировать другого человека. Я могу позаботиться о себе.</p></div>
+        <div class="help-step"><span class="step-n">4</span><p>Позвони кому-нибудь из списка ниже до того, как действовать.</p></div>
+      </section>
+      <section class="card">
+        <h2>Кому позвонить</h2>
+        ${c.length ? c.map(x => `<div class="contact"><div class="who"><b>${esc(x.name)}</b> <span class="muted small">${esc(x.role || "")}</span>${contactLines(x)}</div></div>`).join("") : `<p class="muted">Список пуст. Добавьте контакты в разделе «Поддержка».</p>`}
+      </section>
+      <p class="muted small">Если кому-то угрожает опасность, звоните 112.</p>
+    </div>`;
+  }
+
+  // ---------- конфиденциальность: код-пароль и резервная копия ----------
+  const enc = new TextEncoder(), dec = new TextDecoder();
+  const b64 = buf => btoa(String.fromCharCode(...new Uint8Array(buf)));
+  const unb64 = str => Uint8Array.from(atob(str), c => c.charCodeAt(0));
+  const rand = n => crypto.getRandomValues(new Uint8Array(n));
+  const meta = () => ls.get("meta") || {};
+  const setMeta = patch => ls.set("meta", Object.assign(meta(), patch));
+  const WEEK = 7 * 86400000;
+
+  async function hashPin(pin, salt) {
+    const key = await crypto.subtle.importKey("raw", enc.encode(pin), "PBKDF2", false, ["deriveBits"]);
+    return b64(await crypto.subtle.deriveBits({ name: "PBKDF2", salt: unb64(salt), iterations: 150000, hash: "SHA-256" }, key, 256));
+  }
+  async function deriveKey(password, salt) {
+    const key = await crypto.subtle.importKey("raw", enc.encode(password), "PBKDF2", false, ["deriveKey"]);
+    return crypto.subtle.deriveKey({ name: "PBKDF2", salt, iterations: 250000, hash: "SHA-256" }, key, { name: "AES-GCM", length: 256 }, false, ["encrypt", "decrypt"]);
+  }
+
+  function hasData() { return !!state.profile.step3 || (state.profile.contacts || []).length > 0 || Object.keys(state.days).length > 0; }
+
+  function backupBanner() {
+    const last = meta().lastBackup;
+    if (!hasData() || (last && Date.now() - last < WEEK)) return "";
+    return `
+      <section class="card banner">
+        <h3>${last ? "Пора обновить резервную копию" : "Сделайте резервную копию"}</h3>
+        <p class="small muted">Записи хранятся только на этом телефоне. Если он потеряется, без копии их не вернуть.</p>
+        <button id="go-backup">Сохранить копию</button>
+      </section>`;
+  }
+
+  function privacyHTML() {
+    const pinOn = !!ls.get("lock"), last = meta().lastBackup;
+    return `
+      <section class="card" id="privacy">
+        <h2>Конфиденциальность</h2>
+        <p class="small muted">Все записи хранятся только на этом устройстве. Приложение ничего не отправляет в интернет: ни имени, ни ответов, ни контактов. Нет регистрации и нет сервера с вашими данными.</p>
+
+        <h3>Код-пароль</h3>
+        <p class="small muted">${pinOn ? "Включён. Приложение просит код при открытии и после сворачивания дольше чем на минуту." : "Выключен. Любой, кто возьмёт телефон, сможет открыть записи."}</p>
+        <div class="row">
+          <input id="pin1" type="password" inputmode="numeric" autocomplete="off" placeholder="${pinOn ? "Новый код" : "Код из 4–8 цифр"}" style="flex: 1 1 120px">
+          <input id="pin2" type="password" inputmode="numeric" autocomplete="off" placeholder="Ещё раз" style="flex: 1 1 120px">
+        </div>
+        <div class="row">
+          <button class="primary" id="pin-set">${pinOn ? "Сменить код" : "Включить код"}</button>
+          ${pinOn ? `<button class="ghost" id="pin-off">Выключить код</button>` : ""}
+        </div>
+
+        <h3>Резервная копия</h3>
+        <p class="small muted">${last ? `Последняя копия: ${human(ymd(new Date(last)))}.` : "Копий ещё не было."} Копия шифруется паролем, который вы придумаете. Без этого пароля файл никто не прочитает, и восстановить его тоже нельзя, поэтому запомните пароль.</p>
+        <input id="bk-pass" type="password" autocomplete="new-password" placeholder="Пароль для копии, не короче 6 символов">
+        <button class="primary" id="bk-save">Сохранить копию</button>
+        <p class="small muted">На iPhone выберите «Сохранить в Файлы». Чтобы перенести записи на другое устройство, откройте там приложение и восстановите копию.</p>
+
+        <label class="field" for="bk-file">Восстановить из копии
+          <input id="bk-file" type="file" accept=".json,application/json">
+        </label>
+        <input id="bk-pass2" type="password" autocomplete="off" placeholder="Пароль копии">
+        <button id="bk-restore">Восстановить (заменит текущие записи)</button>
+
+        <h3>Удалить всё</h3>
+        <p class="small muted">Стирает с этого устройства все записи, контакты и код-пароль.</p>
+        <button class="danger" id="wipe">Удалить все данные</button>
+      </section>`;
+  }
+
+  function collectData() {
+    const data = {};
+    for (const k of ls.keys()) if (k !== "lock" && k !== "meta") data[k] = ls.get(k);
+    return data;
+  }
+
+  async function saveBackup() {
+    const pass = document.getElementById("bk-pass").value;
+    if (pass.length < 6) return toast("Придумайте пароль не короче 6 символов");
+    const salt = rand(16), iv = rand(12);
+    const key = await deriveKey(pass, salt);
+    const ct = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, key, enc.encode(JSON.stringify({ v: 1, created: Date.now(), data: collectData() })));
+    const body = JSON.stringify({ format: "ddn-backup", v: 1, salt: b64(salt), iv: b64(iv), ct: b64(ct) });
+    // нейтральное имя файла, без слов про программу
+    const name = `backup-${todayStr()}.json`;
+    const file = new File([body], name, { type: "application/json" });
+    let done = false;
+    try {
+      if (navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file] }); done = true; }
+    } catch (e) { if (e && e.name === "AbortError") return toast("Копия не сохранена"); }
+    if (!done) {
+      const url = URL.createObjectURL(file), a = document.createElement("a");
+      a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 5000);
+    }
+    document.getElementById("bk-pass").value = "";
+    setMeta({ lastBackup: Date.now() });
+    render(); toast("Копия сохранена");
+  }
+
+  let restoreArmed = false;
+  async function restoreBackup(btn) {
+    const f = document.getElementById("bk-file").files[0], pass = document.getElementById("bk-pass2").value;
+    if (!f) return toast("Выберите файл копии");
+    if (!pass) return toast("Введите пароль копии");
+    if (!restoreArmed && hasData()) { restoreArmed = true; btn.textContent = "Точно заменить текущие записи?"; return; }
+    let payload;
+    try {
+      const box = JSON.parse(await f.text());
+      if (box.format !== "ddn-backup") throw new Error("format");
+      const key = await deriveKey(pass, unb64(box.salt));
+      payload = JSON.parse(dec.decode(await crypto.subtle.decrypt({ name: "AES-GCM", iv: unb64(box.iv) }, key, unb64(box.ct))));
+    } catch { restoreArmed = false; btn.textContent = "Восстановить (заменит текущие записи)"; return toast("Неверный пароль или это не файл копии"); }
+    for (const k of ls.keys()) if (k !== "lock" && k !== "meta") { try { localStorage.removeItem(LS + k); } catch {} }
+    for (const [k, v] of Object.entries(payload.data || {})) ls.set(k, v);
+    state.days = {}; loadLocal(); restoreArmed = false;
+    setMeta({ lastBackup: payload.created || Date.now() });
+    render(); toast("Записи восстановлены");
+  }
+
+  let wipeArmed = false;
+  function wipe(btn) {
+    if (!wipeArmed) { wipeArmed = true; btn.textContent = "Нажмите ещё раз, чтобы удалить навсегда"; return; }
+    for (const k of ls.keys()) { try { localStorage.removeItem(LS + k); } catch {} }
+    state.days = {}; state.profile = { step3: "", contacts: [] }; wipeArmed = false;
+    state.tab = "today"; render(); toast("Все данные удалены");
+  }
+
+  // ----- экран блокировки -----
+  const lockEl = document.getElementById("lock");
+  let hiddenAt = 0;
+  function cover(on) { document.body.classList.toggle("covered", on); }
+  function showLock() {
+    if (!ls.get("lock")) return;
+    cover(true);
+    lockEl.innerHTML = `
+      <form class="lock-box" id="lock-form">
+        <h2>День за днём</h2>
+        <p class="muted">Введите код</p>
+        <input id="lock-pin" type="password" inputmode="numeric" autocomplete="off" aria-label="Код">
+        <button class="primary" type="submit">Открыть</button>
+        <p class="small muted" id="lock-msg"></p>
+        <button type="button" class="ghost small" id="lock-forgot">Забыли код?</button>
+      </form>`;
+    lockEl.hidden = false;
+    setTimeout(() => document.getElementById("lock-pin").focus(), 50);
+  }
+  function unlock() { lockEl.hidden = true; lockEl.innerHTML = ""; cover(false); }
+  let forgotArmed = false;
+  lockEl.addEventListener("submit", async e => {
+    e.preventDefault();
+    const l = ls.get("lock"), pin = document.getElementById("lock-pin").value;
+    if (l && await hashPin(pin, l.salt) === l.hash) return unlock();
+    document.getElementById("lock-msg").textContent = "Неверный код";
+    document.getElementById("lock-pin").value = "";
+  });
+  lockEl.addEventListener("click", e => {
+    if (e.target.id !== "lock-forgot") return;
+    const msg = document.getElementById("lock-msg");
+    if (!forgotArmed) {
+      forgotArmed = true;
+      msg.textContent = "Код нельзя восстановить. Можно стереть все данные на этом устройстве и потом восстановить их из резервной копии.";
+      e.target.textContent = "Стереть данные и сбросить код";
+      return;
+    }
+    for (const k of ls.keys()) { try { localStorage.removeItem(LS + k); } catch {} }
+    state.days = {}; state.profile = { step3: "", contacts: [] }; forgotArmed = false;
+    unlock(); render(); toast("Данные стёрты");
+  });
+  function startLock() {
+    showLock();
+    document.addEventListener("visibilitychange", () => {
+      if (!ls.get("lock")) return;
+      if (document.hidden) { hiddenAt = Date.now(); cover(true); }
+      else if (lockEl.hidden) { Date.now() - hiddenAt > 60000 ? showLock() : cover(false); }
+    });
+  }
+
+  // ----- кнопки раздела «Конфиденциальность» -----
+  app.addEventListener("click", async e => {
+    const t = e.target.closest("button");
+    if (!t) return;
+    if (t.id === "go-backup") { go("support"); setTimeout(() => { const el = document.getElementById("privacy"); el && el.scrollIntoView({ block: "start" }); document.getElementById("bk-pass")?.focus(); }, 50); }
+    if (t.id === "pin-set") {
+      const p1 = document.getElementById("pin1").value, p2 = document.getElementById("pin2").value;
+      if (!/^\d{4,8}$/.test(p1)) return toast("Код: от 4 до 8 цифр");
+      if (p1 !== p2) return toast("Коды не совпадают");
+      const salt = b64(rand(16));
+      ls.set("lock", { salt, hash: await hashPin(p1, salt) });
+      render(); toast("Код-пароль включён");
+    }
+    if (t.id === "pin-off") {
+      if (t.dataset.confirm !== "1") { t.dataset.confirm = "1"; t.textContent = "Точно выключить?"; return; }
+      try { localStorage.removeItem(LS + "lock"); } catch {}
+      render(); toast("Код-пароль выключен");
+    }
+    if (t.id === "bk-save") saveBackup().catch(() => toast("Не получилось сохранить копию"));
+    if (t.id === "bk-restore") restoreBackup(t);
+    if (t.id === "wipe") wipe(t);
+  });
+
+  function render() {
+    const views = { today: viewToday, journal: viewJournal, calendar: viewCalendar, support: viewSupport };
+    app.innerHTML = views[state.tab]();
+    document.querySelectorAll("nav.tabs button").forEach(b => b.setAttribute("aria-current", String(b.dataset.tab === state.tab)));
+  }
+  function go(tab) { state.tab = tab; render(); window.scrollTo(0, 0); try { sessionStorage.setItem("dzd-tab", tab); } catch {} }
+
+  // ---------- события ----------
+  document.querySelector("nav.tabs").addEventListener("click", e => { const b = e.target.closest("button[data-tab]"); if (b) go(b.dataset.tab); });
+
+  app.addEventListener("click", async e => {
+    const t = e.target.closest("button, [data-open], a.send-link");
+    if (!t) return;
+    if (t.id === "open-help") return openHelp();
+    if (t.id === "s3-save") {
+      const v = document.getElementById("s3-first").value;
+      if (!v) return toast("Выберите дату третьего шага");
+      state.profile.step3 = v; saveProfile(); render(); return;
+    }
+    if (t.id === "back-today") { state.sel = todayStr(); return render(); }
+    if (t.id === "send-report") {
+      syncFromDom();
+      const text = buildReport(dayData(state.sel));
+      prepTg(t, text);
+      const out = document.getElementById("report-out");
+      out.innerHTML = reportPanel(text);
+      const ok = await copyText(text, "Отчёт скопирован");
+      if (!ok) out.querySelector("p").innerHTML = "<b>Скопируйте текст ниже</b> и вставьте его в чат со спонсором.";
+      out.scrollIntoView({ behavior: "smooth", block: "start" });
+      return;
+    }
+    if (t.dataset.kind || t.dataset.act) {
+      const arr = t.dataset.kind ? state.draft.kinds : state.draft.actions, v = t.dataset.kind || t.dataset.act;
+      const i = arr.indexOf(v); i >= 0 ? arr.splice(i, 1) : arr.push(v);
+      t.setAttribute("aria-pressed", String(i < 0)); return;
+    }
+    if (t.id === "t-add") {
+      const dr = state.draft;
+      dr.what = document.getElementById("t-what").value.trim(); dr.part = document.getElementById("t-part").value.trim();
+      if (!dr.what && !dr.part && !dr.kinds.length) return toast("Напишите, что произошло");
+      const d = dayData(state.sel);
+      d.tenth.push({ id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), time: state.sel === todayStr() ? nowTime() : "—", what: dr.what, kinds: [...dr.kinds], part: dr.part, actions: [...dr.actions] });
+      saveDay(state.sel); state.draft = newDraft(); render();
+      toast(`Записано. За день: ${d.tenth.length}`); return;
+    }
+    if (t.dataset.tdel) {
+      if (t.dataset.confirm !== "1") { t.dataset.confirm = "1"; t.textContent = "Точно удалить?"; return; }
+      const d = dayData(state.sel); d.tenth = d.tenth.filter(x => x.id !== t.dataset.tdel); saveDay(state.sel); render(); toast("Запись удалена"); return;
+    }
+    if (t.id === "t-send") {
+      const text = buildTenthReport(dayData(state.sel));
+      prepTg(t, text);
+      const out = document.getElementById("report-out");
+      out.innerHTML = reportPanel(text);
+      const ok = await copyText(text, "Записи 10 шага скопированы");
+      if (!ok) out.querySelector("p").innerHTML = "<b>Скопируйте текст ниже</b> и вставьте его в чат со спонсором.";
+      return;
+    }
+    if (t.id === "copy-report") return copyText(document.getElementById("report-text").value, "Отчёт скопирован");
+    if (t.id === "pause" || t.id === "unpause") {
+      const d = dayData(state.sel); d.pauses = Math.max(0, (d.pauses || 0) + (t.id === "pause" ? 1 : -1)); saveDay(state.sel); render();
+      if (t.id === "pause") toast("Пауза отмечена"); return;
+    }
+    if (t.dataset.mood) {
+      const d = dayData(state.sel); d.moods = d.moods || [];
+      const i = d.moods.indexOf(t.dataset.mood); i >= 0 ? d.moods.splice(i, 1) : d.moods.push(t.dataset.mood);
+      t.setAttribute("aria-pressed", String(i < 0)); saveDay(state.sel); return;
+    }
+    if (t.dataset.open) { state.sel = t.dataset.open; render(); window.scrollTo(0, 0); return; }
+    if (t.dataset.day) { state.sel = t.dataset.day; return go("today"); }
+    if (t.id === "cal-prev" || t.id === "cal-next") {
+      const [y, m] = (state.calMonth || todayStr().slice(0, 7)).split("-").map(Number);
+      const d = new Date(y, m - 1 + (t.id === "cal-next" ? 1 : -1), 1);
+      state.calMonth = `${d.getFullYear()}-${pad(d.getMonth() + 1)}`; return render();
+    }
+    if (t.dataset.copy !== undefined) {
+      const x = state.profile.contacts[+t.dataset.copy];
+      try { await navigator.clipboard.writeText(contactText(x)); toast("Контакт скопирован"); } catch { toast("Выделите контакт и скопируйте вручную"); }
+      return;
+    }
+    if (t.dataset.del !== undefined) {
+      const i = +t.dataset.del;
+      if (t.dataset.confirm !== "1") { t.dataset.confirm = "1"; t.textContent = "Точно удалить?"; return; }
+      state.profile.contacts.splice(i, 1); saveProfile(); render(); toast("Контакт удалён");
+    }
+  });
+
+  app.addEventListener("change", e => {
+    const t = e.target;
+    if (t.dataset.m !== undefined) { const d = dayData(state.sel); d.morning[t.dataset.m] = t.checked; saveDay(state.sel); refreshStatus(); }
+    if (t.id === "p-gender") { state.profile.gender = t.value; saveProfile(); }
+    if (t.id === "s3-edit") { state.profile.step3 = t.value; saveProfile(); toast(t.value ? "Дата третьего шага сохранена" : "Дата очищена"); }
+  });
+
+  app.addEventListener("input", e => {
+    const t = e.target, d = () => dayData(state.sel);
+    if (t.id === "m-note") { d().morningNote = t.value; saveDay(state.sel); }
+    else if (t.dataset.e !== undefined) { d().evening[t.dataset.e] = t.value; saveDay(state.sel); }
+    else if (t.dataset.t) { state.draft[t.dataset.t] = t.value; }
+    else if (t.id === "p-name" || t.id === "p-city") { state.profile[t.id.slice(2)] = t.value.trim(); saveProfile(); }
+  });
+  app.addEventListener("focusout", e => { if (e.target.matches("textarea")) refreshStatus(); });
+
+  // Забрать в данные всё, что сейчас написано на экране (в том числе то, что не сохранилось раньше)
+  function syncFromDom() {
+    if (state.tab !== "today") return;
+    const d = dayData(state.sel);
+    let changed = false;
+    app.querySelectorAll("[data-e]").forEach(el => {
+      if (el.id === "e-sponsees" || el.id === "e-sp-count") { if (d.evening[el.dataset.e] === undefined && el.value === String(evVal(d, el.dataset.e))) return; }
+      if (el.id === "e-tenth" && d.evening.tenth === undefined && el.value === String(tenthCount(d) || "")) return;
+      if ((d.evening[el.dataset.e] ?? "") !== el.value) { d.evening[el.dataset.e] = el.value; changed = true; }
+    });
+    app.querySelectorAll("[data-m]").forEach(el => { if (!!d.morning[el.dataset.m] !== el.checked) { d.morning[el.dataset.m] = el.checked; changed = true; } });
+    const note = document.getElementById("m-note");
+    if (note && note.value !== (d.morningNote || "")) { d.morningNote = note.value; changed = true; }
+    if (changed) saveDay(state.sel);
+  }
+
+  function refreshStatus() {
+    if (state.tab !== "today") return;
+    const d = dayData(state.sel), st = app.querySelectorAll(".status");
+    const set = (el, on) => { el.classList.toggle("done", !!on); el.textContent = on ? "сделано" : "не начато"; };
+    if (st[0]) set(st[0], hasMorning(d));
+    if (st[2]) set(st[2], hasEvening(d));
+  }
+
+  app.addEventListener("submit", e => {
+    if (e.target.id !== "c-form") return;
+    e.preventDefault();
+    const v = id => document.getElementById(id).value.trim();
+    const name = v("c-name"), phone = v("c-phone"), tg = v("c-tg").replace(/^@/, "").replace(/^https?:\/\/t\.me\//, ""), gem = v("c-gem");
+    if (!name) return toast("Укажите имя");
+    if (!phone && !tg && !gem) return toast("Укажите телефон, Telegram или GemSpace");
+    state.profile.contacts = state.profile.contacts || [];
+    state.profile.contacts.push({ name, phone, tg, gem, role: v("c-role") });
+    saveProfile(); render(); toast("Контакт добавлен");
+  });
+
+  const help = document.getElementById("help");
+  function openHelp() { help.innerHTML = helpHTML(); help.hidden = false; document.getElementById("close-help").focus(); }
+  help.addEventListener("click", e => { if (e.target.id === "close-help") { help.hidden = true; } });
+  document.addEventListener("keydown", e => { if (e.key === "Escape" && !help.hidden) help.hidden = true; });
+
+  // смена дня, если приложение открыто через полночь
+  let lastDay = todayStr();
+  setInterval(() => { const t = todayStr(); if (t !== lastDay) { if (state.sel === lastDay) state.sel = t; lastDay = t; render(); } }, 60000);
+
+  // ---------- старт ----------
+  loadLocal();
+  try { const tab = sessionStorage.getItem("dzd-tab"); if (tab) state.tab = tab; } catch {}
+  render();
+  startLock();
+  if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
+  if ("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("sw.js").catch(() => {});
+})();
+</script>
+
+</body>
+</html>
