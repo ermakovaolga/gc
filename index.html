@@ -6,7 +6,8 @@
 <meta name="robots" content="noindex, nofollow">
 <meta name="referrer" content="no-referrer">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self'; form-action 'none'">
-<meta name="theme-color" content="#2f6f68">
+<meta name="theme-color" content="#fbf8ec" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#17142a" media="(prefers-color-scheme: dark)">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="День за днём">
@@ -19,33 +20,49 @@
 :root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
 /* Layout: одна узкая колонка как карманная книжка; сверху счётчик дней, снизу панель вкладок */
 :root {
-  --bg: #eef1f0;
-  --surface: #ffffff;
-  --ink: #1d2b2a;
-  --muted: #5c6d6b;
-  --line: #d5dddb;
-  --accent: #2f6f68;
-  --accent-soft: #dcebe8;
-  --gold: #a87b2a;
-  --help: #b5473a;
-  --help-soft: #f6e3df;
+  /* мягкий солнечный свет: лимонный тёплый фон, сиреневые акценты, глубокий сливовый текст */
+  --bg: #fbf8ec;
+  --surface: #fffefa;
+  --ink: #2e2645;
+  --muted: #6c6485;
+  --line: #ebe5f3;
+  --accent: #6b59a8;
+  --accent-soft: #efeafb;
+  --gold: #d6b23a;
+  --lemon: #f3df72;
+  --lemon-soft: #fdf6cf;
+  --help: #c24f62;
+  --help-soft: #fbe9eb;
+  --glow: rgba(255, 236, 140, 0.55);
+  --shadow: 0 1px 2px rgba(70, 50, 130, 0.04), 0 10px 28px -16px rgba(90, 70, 160, 0.22);
+  --counter-bg: radial-gradient(120% 90% at 100% 0%, #fff1a6 0%, rgba(255, 241, 166, 0) 60%), linear-gradient(160deg, #fdf5cc 0%, #f1ebfb 70%, #e6defa 100%);
+  --counter-ink: #2e2645;
+  --counter-muted: #6c6485;
   --display: "Iowan Old Style", "Palatino Linotype", Palatino, "Noto Serif", Georgia, serif;
   --body: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #121a19; --surface: #1a2524; --ink: #e3ecea; --muted: #97a9a6; --line: #2c3b39;
-    --accent: #6fbdb2; --accent-soft: #203a37; --gold: #d8ad5c; --help: #ec7f71; --help-soft: #3a2220;
+    --bg: #17142a; --surface: #211d38; --ink: #ece8f7; --muted: #a49ec0; --line: #332d50;
+    --accent: #b8a6f2; --accent-soft: #2e2752; --gold: #ead267; --lemon: #ead267; --lemon-soft: #36311f;
+    --help: #f08a97; --help-soft: #3d2131; --glow: rgba(234, 210, 103, 0.10);
+    --shadow: 0 10px 28px -16px rgba(0, 0, 0, 0.6);
+    --counter-bg: radial-gradient(120% 90% at 100% 0%, rgba(234, 210, 103, 0.28) 0%, rgba(234, 210, 103, 0) 60%), linear-gradient(160deg, #2c2650 0%, #251f43 100%);
+    --counter-ink: #f3efff; --counter-muted: #bdb5dc;
     color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
-  --bg: #121a19; --surface: #1a2524; --ink: #e3ecea; --muted: #97a9a6; --line: #2c3b39;
-  --accent: #6fbdb2; --accent-soft: #203a37; --gold: #d8ad5c; --help: #ec7f71; --help-soft: #3a2220;
+  --bg: #17142a; --surface: #211d38; --ink: #ece8f7; --muted: #a49ec0; --line: #332d50;
+  --accent: #b8a6f2; --accent-soft: #2e2752; --gold: #ead267; --lemon: #ead267; --lemon-soft: #36311f;
+  --help: #f08a97; --help-soft: #3d2131; --glow: rgba(234, 210, 103, 0.10);
+  --shadow: 0 10px 28px -16px rgba(0, 0, 0, 0.6);
+  --counter-bg: radial-gradient(120% 90% at 100% 0%, rgba(234, 210, 103, 0.28) 0%, rgba(234, 210, 103, 0) 60%), linear-gradient(160deg, #2c2650 0%, #251f43 100%);
+  --counter-ink: #f3efff; --counter-muted: #bdb5dc;
   color-scheme: dark;
 }
 * { box-sizing: border-box; }
-body { background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 16px; line-height: 1.5; }
+body { background: radial-gradient(900px 520px at 100% -8%, var(--glow) 0%, transparent 70%) no-repeat, var(--bg); min-height: 100vh; color: var(--ink); font-family: var(--body); font-size: 16px; line-height: 1.5; }
 .wrap { max-width: 560px; margin: 0 auto; padding-inline: 16px; padding-block: 16px 120px; display: grid; gap: 16px; }
 h1, h2, h3 { font-family: var(--display); font-weight: 700; margin: 0; text-wrap: balance; line-height: 1.2; }
 h2 { font-size: 1.45rem; }
@@ -54,32 +71,28 @@ p { margin: 0; }
 .muted { color: var(--muted); }
 .small { font-size: 0.875rem; }
 .eyebrow { font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
-.card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 18px; display: grid; gap: 12px; min-width: 0; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 20px; box-shadow: var(--shadow); padding: 20px; display: grid; gap: 12px; min-width: 0; }
 .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
 .between { justify-content: space-between; }
 
-button, .btn { font: inherit; cursor: pointer; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); padding: 10px 14px; }
+button, .btn { font: inherit; cursor: pointer; border-radius: 12px; transition: background-color .2s, border-color .2s; border: 1px solid var(--line); background: var(--surface); color: var(--ink); padding: 10px 14px; }
 button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .primary { background: var(--accent); border-color: var(--accent); color: var(--surface); font-weight: 600; }
 .ghost { background: transparent; border-color: transparent; color: var(--accent); padding-inline: 6px; }
-input, textarea, select { font: inherit; color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; width: 100%; }
+input, textarea, select { font: inherit; color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; width: 100%; }
 textarea { resize: vertical; min-height: 64px; }
 label.field { display: grid; gap: 6px; font-size: 0.9rem; color: var(--muted); }
 
-/* счётчик */
-.counter { background: var(--accent); color: #fff; border: 0; padding: 22px 20px; border-radius: 18px; display: grid; gap: 6px; }
-.counter .eyebrow { color: rgba(255,255,255,0.75); }
-.counter .num { font-family: var(--display); font-size: clamp(3.4rem, 18vw, 5rem); line-height: 1; font-variant-numeric: tabular-nums; }
+/* счётчик: утреннее солнце в углу, сиреневое небо */
+.counter { background: var(--counter-bg); color: var(--counter-ink); border: 1px solid var(--line); box-shadow: var(--shadow); padding: 24px 22px; border-radius: 24px; display: grid; gap: 6px; }
+.counter .eyebrow { color: var(--counter-muted); }
+.counter .num { font-family: var(--display); font-size: clamp(3.4rem, 18vw, 5rem); line-height: 1; font-variant-numeric: tabular-nums; color: var(--accent); }
 .counter .unit { font-family: var(--display); font-size: 1.4rem; }
-.counter .meta { color: rgba(255,255,255,0.85); font-size: 0.95rem; }
-.counter .bar { height: 6px; background: rgba(255,255,255,0.25); border-radius: 3px; overflow: hidden; }
-.counter .bar i { display: block; height: 100%; background: #fff; border-radius: 3px; }
-:root[data-theme="dark"] .counter, :root[data-theme="dark"] .counter .num { color: #0f1d1b; }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .counter { color: #0f1d1b; } }
-:root[data-theme="dark"] .counter .eyebrow, :root[data-theme="dark"] .counter .meta { color: rgba(15,29,27,0.75); }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .counter .eyebrow, :root:not([data-theme="light"]) .counter .meta { color: rgba(15,29,27,0.75); } }
+.counter .meta { color: var(--counter-muted); font-size: 0.95rem; }
+.counter .bar { height: 8px; background: color-mix(in srgb, var(--accent) 14%, transparent); border-radius: 4px; overflow: hidden; }
+.counter .bar i { display: block; height: 100%; background: linear-gradient(90deg, var(--accent), var(--lemon)); border-radius: 4px; }
 
-.help-btn { background: var(--help); border-color: var(--help); color: #fff; font-weight: 600; font-size: 1.05rem; padding: 14px; border-radius: 14px; width: 100%; }
+.help-btn { background: var(--help-soft); border-color: color-mix(in srgb, var(--help) 35%, transparent); color: var(--help); font-weight: 600; font-size: 1.05rem; padding: 14px; border-radius: 16px; width: 100%; }
 
 .check { display: flex; gap: 10px; align-items: flex-start; padding: 8px 0; border-top: 1px solid var(--line); }
 .check:first-of-type { border-top: 0; }
@@ -103,10 +116,10 @@ label.field { display: grid; gap: 6px; font-size: 0.9rem; color: var(--muted); }
 .cal button { padding: 6px 0 4px; border-radius: 8px; display: grid; gap: 2px; justify-items: center; font-variant-numeric: tabular-nums; min-height: 48px; }
 .cal button.out { visibility: hidden; }
 .cal button.today { border-color: var(--accent); border-width: 2px; }
-.cal button.s3 { background: var(--accent-soft); }
+.cal button.s3 { background: var(--lemon-soft); }
 .dots { display: flex; gap: 3px; height: 6px; }
 .dots i { width: 6px; height: 6px; border-radius: 50%; }
-.d-m { background: var(--gold); } .d-e { background: var(--accent); } .d-j { background: var(--muted); }
+.d-m { background: var(--lemon); box-shadow: inset 0 0 0 1px var(--gold); } .d-e { background: var(--accent); } .d-j { background: var(--muted); }
 .legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: 0.85rem; color: var(--muted); }
 .legend span { display: inline-flex; gap: 6px; align-items: center; }
 .legend i { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
@@ -120,7 +133,7 @@ label.field { display: grid; gap: 6px; font-size: 0.9rem; color: var(--muted); }
 .entry p { white-space: pre-wrap; overflow-wrap: anywhere; }
 
 /* нижняя навигация */
-nav.tabs { position: fixed; left: 0; right: 0; bottom: 0; background: var(--surface); border-top: 1px solid var(--line); padding-bottom: env(safe-area-inset-bottom, 0px); z-index: 5; }
+nav.tabs { position: fixed; left: 0; right: 0; bottom: 0; background: color-mix(in srgb, var(--surface) 88%, transparent); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); border-top: 1px solid var(--line); padding-bottom: env(safe-area-inset-bottom, 0px); z-index: 5; }
 nav.tabs .in { max-width: 560px; margin: 0 auto; display: grid; grid-template-columns: repeat(5, 1fr); }
 nav.tabs button { border: 0; border-radius: 0; background: transparent; padding: 12px 2px; font-size: 0.78rem; color: var(--muted); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
@@ -130,11 +143,11 @@ nav.tabs button { border: 0; border-radius: 0; background: transparent; padding:
 .tune-text .src { display: block; color: var(--muted); font-size: 0.8rem; font-family: var(--body); margin-top: 2px; }
 .tune-text .step-w { font-weight: 600; font-size: 0.95rem; color: var(--accent); padding-top: 8px; border-top: 1px solid var(--line); }
 .tune-text .step-w:first-child { border-top: 0; padding-top: 0; }
-.pr { font-family: var(--display); font-size: 1.05rem; padding-left: 12px; border-left: 3px solid var(--gold); white-space: pre-line; overflow-wrap: anywhere; }
+.pr { font-family: var(--display); font-size: 1.05rem; padding-left: 14px; border-left: 3px solid var(--lemon); white-space: pre-line; overflow-wrap: anywhere; }
 .verse { font-family: var(--display); font-size: 1.05rem; white-space: pre-line; }
 .tune-text .li.sub { padding-left: 1.2em; }
 .ideals { color: var(--muted); font-size: 0.95rem; font-family: var(--body); }
-[data-say].reading { background: var(--accent-soft); border-radius: 6px; box-shadow: 0 0 0 6px var(--accent-soft); }
+[data-say].reading { background: var(--lemon-soft); border-radius: 6px; box-shadow: 0 0 0 6px var(--lemon-soft); transition: background-color .4s, box-shadow .4s; }
 #player { border-bottom: 1px solid var(--line); }
 #player .in { max-width: 560px; margin: 0 auto; padding: 8px 16px; display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; font-size: 0.9rem; }
 #player .in > span { flex: 1 1 auto; font-variant-numeric: tabular-nums; }
@@ -154,7 +167,7 @@ html, body { margin: 0; }
 body.covered #app, body.covered nav.tabs { visibility: hidden; }
 .lock-box { max-width: 340px; margin: 18vh auto 0; padding-inline: 16px; display: grid; gap: 14px; text-align: center; }
 .lock-box input { text-align: center; font-size: 1.6rem; letter-spacing: 0.4em; }
-.banner { border-color: var(--gold); }
+.banner { border-color: var(--lemon); background: linear-gradient(160deg, var(--lemon-soft), var(--surface) 70%); }
 .danger { color: var(--help); border-color: var(--help); background: transparent; }
 @media (prefers-reduced-motion: no-preference) { .card, .counter { transition: border-color .2s; } }
 </style>
@@ -236,7 +249,7 @@ body.covered #app, body.covered nav.tabs { visibility: hidden; }
   // pr — молитва (src — где в книге, ideals — перечень после молитвы), verse — стихи с переносами строк.
   // Каждый блок читается вслух отдельно; src вслух не читается.
   const TUNE = [
-    { id: "t10", title: "10 шаг", short: "10 шаг", note: "Исправленный перевод, с. 81", blocks: [
+    { id: "t10", title: "10-ый шаг", short: "10-ый шаг", note: "Исправленный перевод, с. 81", blocks: [
       { p: "Эта мысль приводит нас к Десятому Шагу, который рекомендует нам продолжать личную инвентаризацию и исправлять любые новые ошибки на нашем пути." },
       { p: "Мы энергично начали жить таким образом, по мере того, как приводили в порядок наше прошлое. Мы вошли в мир Духа. Наша следующая задача — расти в понимании и эффективности. Это происходит не сразу. Это должно продолжаться всю нашу жизнь. Мы продолжаем наблюдать за эгоизмом, нечестностью, обидами (злобами) и страхом. Когда они появляются, мы сразу же просим Бога избавить нас от них. Мы немедленно обсуждаем это с кем-то и быстро исправляем ошибки, если мы причинили ущерб кому-либо. Затем мы решительно поворачиваем наши мысли к тем, кому мы можем помочь. Любовь и толерантность к другим являются нашим кодексом." },
       { p: "А ещё мы прекратили бороться с чем угодно и с кем угодно — даже с алкоголем. Ибо к этому времени к нам вернулось здравомыслие. Нас редко будет интересовать спиртное. Если появится соблазн, мы отпрянем от него, как от огня. Мы ведём себя разумно и естественно, и мы находим, что это произошло автоматически. Мы обнаруживаем, что наше новое отношение к алкоголю было дано нам безо всякой мысли или усилия с нашей стороны. Это просто произошло! В этом и заключается чудо. Мы не боремся с алкоголем и не избегаем искушения. Мы чувствуем себя находящимися в нейтральной позиции — в безопасности и под защитой. Мы не давали зароков, проблема устранена. Она больше не существует для нас. В нас нет самонадеянности, но нет и страха. Это — наш опыт. Это то, как мы реагируем, пока находимся в хорошем духовном состоянии." },
@@ -293,7 +306,7 @@ body.covered #app, body.covered nav.tabs { visibility: hidden; }
       { step: "12. Достигнув духовного пробуждения как результата этих шагов, мы пытались нести эту весть другим людям и применять эти принципы во всех наших делах." },
       { pr: "Господи! Что я могу сделать для тех, кто ещё болен?", src: "с. 160" },
     ] },
-    { id: "t11", title: "11 шаг", short: "11 шаг", blocks: [
+    { id: "t11", title: "11-ый шаг", short: "11-ый шаг", blocks: [
       { h: "Утро" },
       { p: "Проснувшись утром, надо подумать о предстоящих 24 часах жизни. Рассмотрим наши планы на день. В самом начале дня мы просим Бога направить наши помыслы в верное русло, уберечь нас от жалости к себе, бесчестных поступков, корыстолюбия.", src: "с. 83" },
       { p: "Размышляя о предстоящем дне, мы можем испытывать неуверенность. Может быть, мы не способны решить, какие действия предпринять. Мы должны просить вдохновения у Бога, чтобы у нас появились интуитивные мысли или решения. Мы успокаиваемся и не нервничаем. Мы ни с кем и ни с чем не боремся.", src: "с. 84" },

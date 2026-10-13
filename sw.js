@@ -1,5 +1,5 @@
 // Офлайн-режим: файлы приложения хранятся на устройстве. Данные пользователя сюда не попадают.
-const CACHE = "ddn-v1";
+const CACHE = "ddn-v2";
 const FILES = ["./", "index.html", "manifest.webmanifest", "icon-180.png", "icon-192.png", "icon-512.png"];
 
 self.addEventListener("install", e => {
