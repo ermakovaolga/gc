@@ -474,7 +474,6 @@ body.covered #app, body.covered nav.tabs { visibility: hidden; }
           <button id="copy-report">Скопировать ещё раз</button>
           ${links.join("")}
         </div>
-        ${sponsor ? "" : `<p class="muted small">Добавьте спонсора в разделе «Поддержка», чтобы здесь появились ссылки на его Telegram или WhatsApp.</p>`}
       </div>`;
   }
 
@@ -576,7 +575,6 @@ body.covered #app, body.covered nav.tabs { visibility: hidden; }
     const html = TUNE.map(tuneSection).join("") + myPrayersHTML();
     return `
       ${counterHTML()}
-      ${backupBanner()}
       <section class="card">
         <h2>Настрой на день</h2>
         <p class="muted small">11 шаг, молитвы всех шагов из книги АА, 10 шаг, молитва святого Франциска и ваши молитвы. Можно читать или слушать.</p>
@@ -596,7 +594,8 @@ body.covered #app, body.covered nav.tabs { visibility: hidden; }
         <div class="chips">${SOUNDS.map(x => `<button class="chip" data-sound="${x.k}" aria-pressed="${med?.kind === x.k}">${x.name}</button>`).join("")}</div>
         <button id="med-stop" ${med ? "" : "hidden"}>Остановить</button>
       </section>
-      ${html}`;
+      ${html}
+      ${backupBanner()}`;
   }
 
   // ----- чтение вслух (встроенный синтезатор речи устройства) -----
