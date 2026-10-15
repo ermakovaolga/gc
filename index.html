@@ -62,7 +62,9 @@
   color-scheme: dark;
 }
 * { box-sizing: border-box; }
-body { background: radial-gradient(900px 520px at 100% -8%, var(--glow) 0%, transparent 70%) no-repeat, var(--bg); min-height: 100vh; color: var(--ink); font-family: var(--body); font-size: 16px; line-height: 1.5; }
+body { background: radial-gradient(900px 520px at 100% -8%, var(--glow) 0%, transparent 70%) no-repeat, var(--bg); min-height: 100vh; color: var(--ink); font-family: var(--body); font-size: 1rem; line-height: 1.5; }
+html.big { font-size: 125%; }
+.say-main { font-size: 1.15rem; padding: 16px; border-radius: 16px; }
 .wrap { max-width: 560px; margin: 0 auto; padding-inline: 16px; padding-block: 16px 120px; display: grid; gap: 16px; }
 h1, h2, h3 { font-family: var(--display); font-weight: 700; margin: 0; text-wrap: balance; line-height: 1.2; }
 h2 { font-size: 1.45rem; }
@@ -89,9 +91,6 @@ label.field { display: grid; gap: 6px; font-size: 0.9rem; color: var(--muted); }
 .counter .num { font-family: var(--display); font-size: clamp(3.4rem, 18vw, 5rem); line-height: 1; font-variant-numeric: tabular-nums; color: var(--accent); }
 .counter .unit { font-family: var(--display); font-size: 1.4rem; }
 .counter .meta { color: var(--counter-muted); font-size: 0.95rem; }
-.counter .bar { height: 8px; background: color-mix(in srgb, var(--accent) 14%, transparent); border-radius: 4px; overflow: hidden; }
-.counter .bar i { display: block; height: 100%; background: linear-gradient(90deg, var(--accent), var(--lemon)); border-radius: 4px; }
-
 .help-btn { background: var(--help-soft); border-color: color-mix(in srgb, var(--help) 35%, transparent); color: var(--help); font-weight: 600; font-size: 1.05rem; padding: 14px; border-radius: 16px; width: 100%; }
 
 .check { display: flex; gap: 10px; align-items: flex-start; padding: 8px 0; border-top: 1px solid var(--line); }
@@ -134,8 +133,8 @@ label.field { display: grid; gap: 6px; font-size: 0.9rem; color: var(--muted); }
 
 /* нижняя навигация */
 nav.tabs { position: fixed; left: 0; right: 0; bottom: 0; background: color-mix(in srgb, var(--surface) 88%, transparent); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); border-top: 1px solid var(--line); padding-bottom: env(safe-area-inset-bottom, 0px); z-index: 5; }
-nav.tabs .in { max-width: 560px; margin: 0 auto; display: grid; grid-template-columns: repeat(5, 1fr); }
-nav.tabs button { border: 0; border-radius: 0; background: transparent; padding: 12px 2px; font-size: 0.78rem; color: var(--muted); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+nav.tabs .in { max-width: 560px; margin: 0 auto; display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; }
+nav.tabs button { border: 0; border-radius: 0; background: transparent; padding: 14px 2px; font-size: 0.95rem; color: var(--muted); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 /* настрой на день */
 .tune-text { display: grid; gap: 12px; }
@@ -182,9 +181,10 @@ body.covered #app, body.covered nav.tabs { visibility: hidden; }
   <div class="in">
     <button id="tab-tune" data-tab="tune">Настрой</button>
     <button id="tab-today" data-tab="today">Сегодня</button>
-    <button id="tab-journal" data-tab="journal">10 шаг</button>
-    <button id="tab-calendar" data-tab="calendar">Календарь</button>
-    <button id="tab-support" data-tab="support">Поддержка</button>
+    <!-- скрыты по просьбе: разделы работают, но в меню их нет -->
+    <button id="tab-journal" data-tab="journal" hidden>10 шаг</button>
+    <button id="tab-calendar" data-tab="calendar" hidden>Календарь</button>
+    <button id="tab-support" data-tab="support" hidden>Поддержка</button>
   </div>
 </nav>
 
@@ -204,15 +204,6 @@ body.covered #app, body.covered nav.tabs { visibility: hidden; }
   const MONTHS = ["Январь","Февраль","Март","Апрель","Май","Июнь","Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь"];
   const human = s => { const [y, m, d] = s.split("-").map(Number); return `${d} ${MONTHS_GEN[m - 1]} ${y}`; };
   const plural = (n, one, few, many) => { const a = Math.abs(n) % 100, b = a % 10; if (a > 10 && a < 20) return many; if (b > 1 && b < 5) return few; if (b === 1) return one; return many; };
-  function ymdParts(from, to) {
-    const [y1, m1, d1] = from.split("-").map(Number), [y2, m2, d2] = to.split("-").map(Number);
-    let y = y2 - y1, m = m2 - m1, d = d2 - d1;
-    if (d < 0) { m--; d += new Date(y2, m2 - 1, 0).getDate(); }
-    if (m < 0) { y--; m += 12; }
-    return { y, m, d };
-  }
-  const MILESTONES = [1, 7, 14, 30, 60, 90, 100, 180, 200, 300, 365, 500, 730, 1000, 1095, 1461, 1500, 1826, 2000, 2500, 3000, 3650, 5000, 7300, 10000];
-
   // ---------- содержание 11-го шага (пересказ, Большая книга, гл. 6 «В действии», с. 86–88) ----------
   const MORNING = [
     "Подумать о предстоящем дне и о своих планах на него",
@@ -249,23 +240,15 @@ body.covered #app, body.covered nav.tabs { visibility: hidden; }
   // pr — молитва (src — где в книге, ideals — перечень после молитвы), verse — стихи с переносами строк.
   // Каждый блок читается вслух отдельно; src вслух не читается.
   const TUNE = [
-    { id: "t10", title: "10-ый шаг", short: "10-ый шаг", note: "Исправленный перевод, с. 81", blocks: [
-      { p: "Эта мысль приводит нас к Десятому Шагу, который рекомендует нам продолжать личную инвентаризацию и исправлять любые новые ошибки на нашем пути." },
-      { p: "Мы энергично начали жить таким образом, по мере того, как приводили в порядок наше прошлое. Мы вошли в мир Духа. Наша следующая задача — расти в понимании и эффективности. Это происходит не сразу. Это должно продолжаться всю нашу жизнь. Мы продолжаем наблюдать за эгоизмом, нечестностью, обидами (злобами) и страхом. Когда они появляются, мы сразу же просим Бога избавить нас от них. Мы немедленно обсуждаем это с кем-то и быстро исправляем ошибки, если мы причинили ущерб кому-либо. Затем мы решительно поворачиваем наши мысли к тем, кому мы можем помочь. Любовь и толерантность к другим являются нашим кодексом." },
-      { p: "А ещё мы прекратили бороться с чем угодно и с кем угодно — даже с алкоголем. Ибо к этому времени к нам вернулось здравомыслие. Нас редко будет интересовать спиртное. Если появится соблазн, мы отпрянем от него, как от огня. Мы ведём себя разумно и естественно, и мы находим, что это произошло автоматически. Мы обнаруживаем, что наше новое отношение к алкоголю было дано нам безо всякой мысли или усилия с нашей стороны. Это просто произошло! В этом и заключается чудо. Мы не боремся с алкоголем и не избегаем искушения. Мы чувствуем себя находящимися в нейтральной позиции — в безопасности и под защитой. Мы не давали зароков, проблема устранена. Она больше не существует для нас. В нас нет самонадеянности, но нет и страха. Это — наш опыт. Это то, как мы реагируем, пока находимся в хорошем духовном состоянии." },
-      { p: "Однако можно легко ослабить нашу духовную программу действия, если мы будем почивать на лаврах. Поступая так, мы двигаемся в сторону неприятностей, потому что алкоголь — коварный враг. Мы не излечились от алкоголизма. На самом деле у нас есть ежедневная отсрочка приговора, зависящая от поддержания нашего духовного состояния." },
-      { p: "Каждый день — это день, когда мы должны вносить видение Божьей воли во все наши действия. «Как я могу лучше всего служить Тебе? Да будет исполнена воля Твоя (а не моя)». Эти мысли должны присутствовать у нас постоянно. В этом контексте мы можем применять нашу силу воли так, как мы хотим. Это надлежащее использование воли." },
-      { p: "Много уже было сказано о получении силы, вдохновения и направления от Него, обладающего всеми знаниями и силой. Если мы тщательно следовали указаниям, мы начали чувствовать, как Его Дух вливается в нас. На определённом уровне мы стали осознавать Его. У нас начало вырабатываться это жизненно важное шестое чувство. Но мы должны двигаться дальше, а это значит — больше действий." },
-      { h: "Действия по 10 шагу" },
-      { li: "1) Продолжать делать инвентаризации — писать их кратко спонсору." },
-      { li: "2) Продолжать исправлять новые ошибки." },
-      { li: "3) Нам даны чёткие инструкции по поводу наших действий в течение дня:" },
-      { li: "а) Увидеть проблему (злоба, обида, страх, раздражение, неудовлетворение, жалость к себе, навязчивые мысли и т. д.).", sub: true },
-      { li: "б) Сразу же помолиться Богу, попросить, чтобы Он забрал эту проблему.", sub: true },
-      { li: "в) Сразу же написать спонсору.", sub: true },
-      { li: "г) Сразу же попросить прощения, признать ошибку, если нужно.", sub: true },
-      { li: "д) Сразу же направить свои мысли на то, чтобы помочь кому-нибудь, сделать доброе дело.", sub: true },
-      { li: "4) Каждый день — это день, когда мы должны вносить видение Божьей воли во все наши действия. «Как я могу лучше всего служить Тебе? Да будет исполнена воля Твоя (а не моя)». То есть каждый день мы должны начать вносить во ВСЕ наши дела видение Божьей воли. Во ВСЕ означает во ВСЕ!" },
+    { id: "t11", title: "11-ый шаг", short: "11-ый шаг", blocks: [
+      { h: "Утро" },
+      { p: "Проснувшись утром, надо подумать о предстоящих 24 часах жизни. Рассмотрим наши планы на день. В самом начале дня мы просим Бога направить наши помыслы в верное русло, уберечь нас от жалости к себе, бесчестных поступков, корыстолюбия.", src: "с. 83" },
+      { p: "Размышляя о предстоящем дне, мы можем испытывать неуверенность. Может быть, мы не способны решить, какие действия предпринять. Мы должны просить вдохновения у Бога, чтобы у нас появились интуитивные мысли или решения. Мы успокаиваемся и не нервничаем. Мы ни с кем и ни с чем не боремся.", src: "с. 84" },
+      { p: "Мы заканчиваем период углублённого размышления молитвой, чтобы нам открылось, каким должен быть наш следующий шаг, и чтобы нам было дано всё то, что необходимо для решения наших проблем.", src: "с. 84" },
+      { h: "Весь день" },
+      { p: "В течение дня, если появляются сомнения или волнения по какому-то поводу, нужно остановиться на минуту и попросить Бога указать правильную мысль или действие. Мы постоянно напоминаем себе, что мы больше не мним себя центром Вселенной, смиренно повторяя каждый день: «Да исполнится воля Твоя».", src: "с. 85" },
+      { p: "Но это не всё. Будут действия, и ещё действия. «Вера без дела мертва»." },
+      { p: "Наша работа по 12 шагу — это то, к чему нас подготовили первые 11 шагов, это исполнение нашей истинной цели: помогать алкоголикам и быть максимально полезным Богу и людям, нас окружающим." },
     ] },
     { id: "tpr", title: "Молитвы двенадцати шагов", short: "Молитвы", note: "Из книги «Анонимные Алкоголики»", blocks: [
       { step: "1. Мы признали, что мы бессильны перед алкоголем — что наши жизни стали неуправляемы." },
@@ -306,15 +289,23 @@ body.covered #app, body.covered nav.tabs { visibility: hidden; }
       { step: "12. Достигнув духовного пробуждения как результата этих шагов, мы пытались нести эту весть другим людям и применять эти принципы во всех наших делах." },
       { pr: "Господи! Что я могу сделать для тех, кто ещё болен?", src: "с. 160" },
     ] },
-    { id: "t11", title: "11-ый шаг", short: "11-ый шаг", blocks: [
-      { h: "Утро" },
-      { p: "Проснувшись утром, надо подумать о предстоящих 24 часах жизни. Рассмотрим наши планы на день. В самом начале дня мы просим Бога направить наши помыслы в верное русло, уберечь нас от жалости к себе, бесчестных поступков, корыстолюбия.", src: "с. 83" },
-      { p: "Размышляя о предстоящем дне, мы можем испытывать неуверенность. Может быть, мы не способны решить, какие действия предпринять. Мы должны просить вдохновения у Бога, чтобы у нас появились интуитивные мысли или решения. Мы успокаиваемся и не нервничаем. Мы ни с кем и ни с чем не боремся.", src: "с. 84" },
-      { p: "Мы заканчиваем период углублённого размышления молитвой, чтобы нам открылось, каким должен быть наш следующий шаг, и чтобы нам было дано всё то, что необходимо для решения наших проблем.", src: "с. 84" },
-      { h: "Весь день" },
-      { p: "В течение дня, если появляются сомнения или волнения по какому-то поводу, нужно остановиться на минуту и попросить Бога указать правильную мысль или действие. Мы постоянно напоминаем себе, что мы больше не мним себя центром Вселенной, смиренно повторяя каждый день: «Да исполнится воля Твоя».", src: "с. 85" },
-      { p: "Но это не всё. Будут действия, и ещё действия. «Вера без дела мертва»." },
-      { p: "Наша работа по 12 шагу — это то, к чему нас подготовили первые 11 шагов, это исполнение нашей истинной цели: помогать алкоголикам и быть максимально полезным Богу и людям, нас окружающим." },
+    { id: "t10", title: "10-ый шаг", short: "10-ый шаг", note: "Исправленный перевод, с. 81", blocks: [
+      { p: "Эта мысль приводит нас к Десятому Шагу, который рекомендует нам продолжать личную инвентаризацию и исправлять любые новые ошибки на нашем пути." },
+      { p: "Мы энергично начали жить таким образом, по мере того, как приводили в порядок наше прошлое. Мы вошли в мир Духа. Наша следующая задача — расти в понимании и эффективности. Это происходит не сразу. Это должно продолжаться всю нашу жизнь. Мы продолжаем наблюдать за эгоизмом, нечестностью, обидами (злобами) и страхом. Когда они появляются, мы сразу же просим Бога избавить нас от них. Мы немедленно обсуждаем это с кем-то и быстро исправляем ошибки, если мы причинили ущерб кому-либо. Затем мы решительно поворачиваем наши мысли к тем, кому мы можем помочь. Любовь и толерантность к другим являются нашим кодексом." },
+      { p: "А ещё мы прекратили бороться с чем угодно и с кем угодно — даже с алкоголем. Ибо к этому времени к нам вернулось здравомыслие. Нас редко будет интересовать спиртное. Если появится соблазн, мы отпрянем от него, как от огня. Мы ведём себя разумно и естественно, и мы находим, что это произошло автоматически. Мы обнаруживаем, что наше новое отношение к алкоголю было дано нам безо всякой мысли или усилия с нашей стороны. Это просто произошло! В этом и заключается чудо. Мы не боремся с алкоголем и не избегаем искушения. Мы чувствуем себя находящимися в нейтральной позиции — в безопасности и под защитой. Мы не давали зароков, проблема устранена. Она больше не существует для нас. В нас нет самонадеянности, но нет и страха. Это — наш опыт. Это то, как мы реагируем, пока находимся в хорошем духовном состоянии." },
+      { p: "Однако можно легко ослабить нашу духовную программу действия, если мы будем почивать на лаврах. Поступая так, мы двигаемся в сторону неприятностей, потому что алкоголь — коварный враг. Мы не излечились от алкоголизма. На самом деле у нас есть ежедневная отсрочка приговора, зависящая от поддержания нашего духовного состояния." },
+      { p: "Каждый день — это день, когда мы должны вносить видение Божьей воли во все наши действия. «Как я могу лучше всего служить Тебе? Да будет исполнена воля Твоя (а не моя)». Эти мысли должны присутствовать у нас постоянно. В этом контексте мы можем применять нашу силу воли так, как мы хотим. Это надлежащее использование воли." },
+      { p: "Много уже было сказано о получении силы, вдохновения и направления от Него, обладающего всеми знаниями и силой. Если мы тщательно следовали указаниям, мы начали чувствовать, как Его Дух вливается в нас. На определённом уровне мы стали осознавать Его. У нас начало вырабатываться это жизненно важное шестое чувство. Но мы должны двигаться дальше, а это значит — больше действий." },
+      { h: "Действия по 10 шагу" },
+      { li: "1) Продолжать делать инвентаризации — писать их кратко спонсору." },
+      { li: "2) Продолжать исправлять новые ошибки." },
+      { li: "3) Нам даны чёткие инструкции по поводу наших действий в течение дня:" },
+      { li: "а) Увидеть проблему (злоба, обида, страх, раздражение, неудовлетворение, жалость к себе, навязчивые мысли и т. д.).", sub: true },
+      { li: "б) Сразу же помолиться Богу, попросить, чтобы Он забрал эту проблему.", sub: true },
+      { li: "в) Сразу же написать спонсору.", sub: true },
+      { li: "г) Сразу же попросить прощения, признать ошибку, если нужно.", sub: true },
+      { li: "д) Сразу же направить свои мысли на то, чтобы помочь кому-нибудь, сделать доброе дело.", sub: true },
+      { li: "4) Каждый день — это день, когда мы должны вносить видение Божьей воли во все наши действия. «Как я могу лучше всего служить Тебе? Да будет исполнена воля Твоя (а не моя)». То есть каждый день мы должны начать вносить во ВСЕ наши дела видение Божьей воли. Во ВСЕ означает во ВСЕ!" },
     ] },
     { id: "tfr", title: "Молитва святого Франциска Ассизского", short: "Св. Франциск", note: "Есть в книге «Двенадцать шагов и двенадцать традиций»", blocks: [
       { verse: "Господи, сделай руки мои продолжением Мира Твоего,\nИ туда, где ненависть, дай мне принести Любовь,\nТуда, где обида, дай мне принести Прощение,\nТуда, где рознь, дай мне принести Единство,\nТуда, где заблуждение, дай мне принести Истину,\nТуда, где сомнение, дай мне принести Веру,\nТуда, где отчаяние, дай мне принести Надежду,\nТуда, где мрак, дай мне принести Свет,\nТуда, где горе, дай мне принести Радость." },
@@ -322,8 +313,7 @@ body.covered #app, body.covered nav.tabs { visibility: hidden; }
       { verse: "Помоги же мне, Господи,\nСделай руки мои продолжением Мира Твоего!" },
     ] },
   ];
-  const SOUNDS = [{ k: "waves", name: "Волны" }, { k: "rain", name: "Дождь" }, { k: "birds", name: "Птицы" }];
-  const MED_MINUTES = [0, 5, 10, 15, 20, 30];
+  const SOUNDS = [{ k: "waves", name: "Волны" }, { k: "birds", name: "Птицы" }];
 
   // ---------- хранилище ----------
   const LS = "dzd:";
@@ -372,15 +362,6 @@ body.covered #app, body.covered nav.tabs { visibility: hidden; }
       </section>`;
     const n = daysBetween(s3, today);
     if (n < 0) return `<section class="counter"><p class="eyebrow">Третий шаг</p><p class="unit">Дата ${human(s3)} ещё впереди</p><p class="meta">Изменить её можно в разделе «Поддержка».</p></section>`;
-    const p = ymdParts(s3, today);
-    const parts = [];
-    if (p.y) parts.push(`${p.y} ${plural(p.y, "год", "года", "лет")}`);
-    if (p.m) parts.push(`${p.m} ${plural(p.m, "месяц", "месяца", "месяцев")}`);
-    if (p.d || !parts.length) parts.push(`${p.d} ${plural(p.d, "день", "дня", "дней")}`);
-    const next = MILESTONES.find(m => m > n) || (Math.floor(n / 365) + 1) * 365;
-    const prev = [...MILESTONES].reverse().find(m => m <= n) || 0;
-    const pct = Math.max(4, Math.min(100, ((n - prev) / (next - prev)) * 100));
-    const left = next - n;
     return `
       <section class="counter" aria-label="Дни трезвости">
         <p class="eyebrow">Сегодня, ${human(today)}</p>
@@ -388,9 +369,6 @@ body.covered #app, body.covered nav.tabs { visibility: hidden; }
           <span class="num">${n.toLocaleString("ru-RU")}</span>
           <span class="unit">${plural(n, "день", "дня", "дней")} трезвости</span>
         </div>
-        <p class="meta">${parts.join(" ")} · третий шаг ${human(s3)}</p>
-        <div class="bar" aria-hidden="true"><i style="width:${pct}%"></i></div>
-        <p class="meta small">До ${next.toLocaleString("ru-RU")} ${plural(next, "дня", "дней", "дней")}: ещё ${left} ${plural(left, "день", "дня", "дней")}</p>
       </section>`;
   }
 
@@ -572,32 +550,35 @@ body.covered #app, body.covered nav.tabs { visibility: hidden; }
   }
   function viewTune() {
     SAY = [];
-    const medMin = meta().medMin ?? 10;
     const html = TUNE.map(tuneSection).join("") + myPrayersHTML();
     return `
       ${counterHTML()}
       ${backupBanner()}
       <section class="card">
         <h2>Настрой на день</h2>
-        <p class="muted small">10 шаг, молитвы из книги АА, 11 шаг, молитва святого Франциска и ваши молитвы. Можно читать или слушать.</p>
-        <button class="primary" id="say-all">${speech.on ? "■ Остановить чтение" : "▶ Слушать вслух"}</button>
+        <p class="muted small">11 шаг, молитвы всех шагов из книги АА, 10 шаг, молитва святого Франциска и ваши молитвы. Можно читать или слушать.</p>
+        <button class="primary say-main" id="say-all">${speech.on ? "■ Остановить чтение" : "▶ Слушать вслух"}</button>
+        <div class="row">
+          <label class="field" for="say-rate" style="flex: 1 1 150px">Скорость чтения
+            <select id="say-rate">${SAY_RATES.map(([v, l]) => `<option value="${v}" ${v === sayRate() ? "selected" : ""}>${l}</option>`).join("")}</select>
+          </label>
+          <button id="big-text" aria-pressed="${!!meta().big}" style="align-self: end">${meta().big ? "Обычный шрифт" : "Крупный шрифт"}</button>
+        </div>
         <div class="chips">${[...TUNE.map(s => [s.id, s.short]), ["tmy", "Мои молитвы"]].map(([id, l]) => `<button class="chip" data-jump="${id}">${esc(l)}</button>`).join("")}</div>
       </section>
       <section class="card" id="med">
         <h2>Медитация</h2>
         <p class="muted small">Звуки природы создаются прямо в телефоне, интернет не нужен. Если звука нет, выключите беззвучный режим.</p>
         <div class="chips">${SOUNDS.map(x => `<button class="chip" data-sound="${x.k}" aria-pressed="${med?.kind === x.k}">${x.name}</button>`).join("")}</div>
-        <div class="row">
-          <label class="field" for="med-min" style="flex: 1 1 160px">Таймер
-            <select id="med-min">${MED_MINUTES.map(m => `<option value="${m}" ${m === medMin ? "selected" : ""}>${m ? `${m} минут, в конце колокольчик` : "Без таймера"}</option>`).join("")}</select>
-          </label>
-          <button id="med-stop" ${med ? "" : "hidden"} style="align-self: end">Остановить</button>
-        </div>
+        <button id="med-stop" ${med ? "" : "hidden"}>Остановить</button>
       </section>
       ${html}`;
   }
 
   // ----- чтение вслух (встроенный синтезатор речи устройства) -----
+  const SAY_RATES = [[0.75, "Медленно"], [0.92, "Обычно"], [1.1, "Быстрее"]];
+  const sayRate = () => meta().sayRate ?? 0.92;
+  const applyBig = () => document.documentElement.classList.toggle("big", !!meta().big);
   const canSpeak = "speechSynthesis" in window && "SpeechSynthesisUtterance" in window;
   const speech = { on: false, paused: false, i: 0, j: 0 };
   let curU = null;
@@ -622,7 +603,7 @@ body.covered #app, body.covered nav.tabs { visibility: hidden; }
     const parts = chunksOf(SAY[speech.i]);
     if (speech.j >= parts.length) { speech.i++; speech.j = 0; return speakNext(); }
     const u = new SpeechSynthesisUtterance(parts[speech.j]);
-    u.lang = "ru-RU"; u.rate = 0.92;
+    u.lang = "ru-RU"; u.rate = sayRate();
     const v = ruVoice(); if (v) u.voice = v;
     const next = () => { if (curU !== u) return; speech.j++; speakNext(); };
     u.onend = next; u.onerror = next;
@@ -691,8 +672,7 @@ body.covered #app, body.covered nav.tabs { visibility: hidden; }
     const master = gainN(c, 0);
     master.connect(c.destination);
     master.gain.setTargetAtTime(1, c.currentTime, 1);
-    const min = meta().medMin ?? 10;
-    const m = med = { kind, c, master, srcs: [], timers: new Set(), start: Date.now(), endAt: min ? Date.now() + min * 60000 : 0 };
+    const m = med = { kind, c, master, srcs: [], timers: new Set(), start: Date.now() };
     const later = (fn, ms) => { const id = setTimeout(() => { m.timers.delete(id); if (med === m) fn(); }, ms); m.timers.add(id); };
 
     if (kind === "waves") {
@@ -709,14 +689,6 @@ body.covered #app, body.covered nav.tabs { visibility: hidden; }
         later(wave, dur * 1000 * rnd(0.85, 1));
       };
       wave();
-    }
-    if (kind === "rain") {
-      const hp = filt(c, "highpass", 600), lp = filt(c, "lowpass", 7000), drops = gainN(c, 0.45);
-      hp.connect(lp); lp.connect(drops); drops.connect(master); noise(m, hp);
-      const rumF = filt(c, "lowpass", 220), rum = gainN(c, 0.45);
-      rumF.connect(rum); rum.connect(master); noise(m, rumF);
-      const gust = () => { drops.gain.setTargetAtTime(rnd(0.3, 0.6), c.currentTime, 1.5); later(gust, rnd(3000, 7000)); };
-      gust();
     }
     if (kind === "birds") {
       // тихий ветер в листве, на нём перекличка птиц с лёгким эхом
@@ -761,20 +733,10 @@ body.covered #app, body.covered nav.tabs { visibility: hidden; }
     setTimeout(() => { m.srcs.forEach(s => { try { s.stop(); } catch {} }); m.master.disconnect(); }, quick ? 400 : 2200);
     updateControls();
   }
-  function bell() {
-    const c = audio(), t = c.currentTime;
-    for (const [r, v] of [[1, 0.3], [2.76, 0.12], [5.4, 0.05]]) {
-      const o = c.createOscillator(), g = gainN(c, 0);
-      o.frequency.value = 330 * r; o.connect(g); g.connect(c.destination);
-      g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(v, t + 0.01); g.gain.exponentialRampToValueAtTime(0.0001, t + 6);
-      o.start(t); o.stop(t + 6.1);
-    }
-  }
   const mmss = ms => { const s = Math.max(0, Math.round(ms / 1000)); return `${Math.floor(s / 60)}:${pad(s % 60)}`; };
-  const medTime = () => med.endAt ? `осталось ${mmss(med.endAt - Date.now())}` : mmss(Date.now() - med.start);
+  const medTime = () => mmss(Date.now() - med.start);
   setInterval(() => {
     if (!med) return;
-    if (med.endAt && Date.now() >= med.endAt) { bell(); stopSound(false); return toast("Медитация окончена"); }
     const el = document.getElementById("pl-time"); if (el) el.textContent = medTime();
   }, 1000);
 
@@ -1207,6 +1169,7 @@ body.covered #app, body.covered nav.tabs { visibility: hidden; }
     if (t.dataset.jump) { document.getElementById(t.dataset.jump)?.scrollIntoView({ behavior: "smooth", block: "start" }); return; }
     if (t.dataset.sound) return med?.kind === t.dataset.sound ? stopSound(false) : startSound(t.dataset.sound);
     if (t.id === "med-stop") return stopSound(false);
+    if (t.id === "big-text") { setMeta({ big: !meta().big }); applyBig(); return render(); }
     if (t.id === "pr-new" || t.dataset.predit) {
       const x = (state.profile.prayers || []).find(p => p.id === t.dataset.predit);
       Object.assign(state, { prForm: true, prEdit: x ? x.id : null, prDraft: x ? x.text : "" });
@@ -1305,7 +1268,7 @@ body.covered #app, body.covered nav.tabs { visibility: hidden; }
     const t = e.target;
     if (t.dataset.m !== undefined) { const d = dayData(state.sel); d.morning[t.dataset.m] = t.checked; saveDay(state.sel); refreshStatus(); }
     if (t.id === "p-gender") { state.profile.gender = t.value; saveProfile(); }
-    if (t.id === "med-min") { const min = +t.value; setMeta({ medMin: min }); if (med) med.endAt = min ? med.start + min * 60000 : 0; updateControls(); }
+    if (t.id === "say-rate") { setMeta({ sayRate: +t.value }); if (speech.on && !speech.paused) { haltSpeech(); speakNext(); } }
     if (t.id === "s3-edit") { state.profile.step3 = t.value; saveProfile(); toast(t.value ? "Дата третьего шага сохранена" : "Дата очищена"); }
   });
 
@@ -1366,7 +1329,8 @@ body.covered #app, body.covered nav.tabs { visibility: hidden; }
 
   // ---------- старт ----------
   loadLocal();
-  try { const tab = sessionStorage.getItem("dzd-tab"); if (tab && document.querySelector(`nav.tabs [data-tab="${tab}"]`)) state.tab = tab; } catch {}
+  applyBig();
+  try { const tab = sessionStorage.getItem("dzd-tab"); if (tab && document.querySelector(`nav.tabs [data-tab="${tab}"]:not([hidden])`)) state.tab = tab; } catch {}
   render();
   startLock();
   if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
