@@ -219,8 +219,8 @@ body.covered #app, body.covered nav.tabs { visibility: hidden; }
   // Вечерний отчёт. list: каждая строка в отчёте становится пунктом «- …»; sub: подпункт первого вопроса
   const EV_INTRO = "Когда мы ложимся спать, мы конструктивно оцениваем прожитый день.";
   const EVENING = [
-    { k: "wrong", q: "Не были ли мы в течение дня злобными, эгоистичными или бесчестными?", ph: "Была / Был / Нет", rows: 1 },
-    { k: "anger", q: "Злобы", list: true, sub: true, ph: "раздражение на служащих" },
+    { k: "wrong", q: "Не были ли мы в течение дня злобными, эгоистичными или бесчестными?", ph: "", rows: 1 },
+    { k: "anger", q: "Злобы", list: true, sub: true, ph: "" },
     { k: "fears", q: "Страхи", list: true, sub: true },
     { k: "dishonesty", q: "Нечестность", list: true, sub: true },
     { k: "selfish", q: "Эгоизм", list: true, sub: true },
@@ -229,7 +229,7 @@ body.covered #app, body.covered nav.tabs { visibility: hidden; }
     { k: "love", q: "Проявляли ли мы любовь и доброту ко всем окружающим?", list: true, ph: "каждый пункт с новой строки" },
     { k: "better", q: "Что мы могли бы сделать лучше?" },
     { k: "flow", q: "Были ли мы в потоке жизни?", hint: "Опиши, что происходило: думала ли ты сегодня в основном о себе или о других, кому помогла, что со спонсируемыми", rows: 4 },
-    { k: "grateful", q: "Благодарность", ph: "за жизнь, за семью…" },
+    { k: "grateful", q: "Благодарность" },
   ];
   const MOODS = ["спокойствие", "благодарность", "тревога", "страх", "обида", "злость", "усталость", "надежда"];
 
@@ -256,10 +256,10 @@ body.covered #app, body.covered nav.tabs { visibility: hidden; }
       { step: "3. Приняли решение препоручить нашу волю и нашу жизнь заботе Бога, как мы Его понимали." },
       { pr: "Господи, я предаю себя Тебе, чтобы Ты создавал и творил со мной, как Тебе угодно. Освободи меня от оков эгоизма, чтобы я выполняла Твою волю. Удали всё то, что тяготит меня, чтобы эта победа была свидетельством для тех, кому я могла бы помочь и помогу Твоею силой, Твоей любовью, Твоим путём в жизни. Да исполняю я Твою волю всегда!", src: "с. 61" },
       { step: "4. Сделали глубокую и бесстрашную моральную инвентаризацию самих себя." },
-      { pr: "Боже, покажи мне, как мне относиться к {resent} с той же толерантностью, с тем же состраданием и терпением, с которыми я с радостью отнеслась бы к больному другу. Это больной человек. Как я могу быть полезна для него? Господи, спаси меня от злости на него. Да исполнится воля Твоя!", src: "с. 65", fill: "resent", fillLabel: "К кому", fillPh: "имя человека" },
-      { pr: "Боже! Избавь меня от страха (страхов) {fears} и направь моё внимание на то, какой мне, согласно Твоей воле, надлежит быть!", src: "с. 67", fill: "fears", fillLabel: "Мои страхи", fillPh: "например: остаться одной, потерять работу" },
+      { pr: "Боже, покажи мне, как мне относиться к {resent} с той же толерантностью, с тем же состраданием и терпением, с которыми я с радостью отнеслась бы к больному другу. Это больной человек. Как я могу быть полезна для него? Господи, спаси меня от злости на него. Да исполнится воля Твоя!", src: "с. 65", fill: "resent", fillLabel: "К кому" },
+      { pr: "Боже! Избавь меня от страха (страхов) {fears} и направь моё внимание на то, какой мне, согласно Твоей воле, надлежит быть!", src: "с. 67", fill: "fears", fillLabel: "Мои страхи" },
       { pr: "Боже! Помоги мне выработать идеалы и жить в соответствии с ними. Я хочу быть:", src: "с. 68, второй абзац",
-        ideals: ["любящей", "терпеливой", "нежной", "слушающей", "бескорыстной", "отдающей", "безопасной", "понимающей", "ответственной", "внимательной", "весёлой", "здоровой", "здравомыслящей", "заинтересованной", "верной", "преданной", "надёжной", "честной", "семейной", "доброй", "трудолюбивой", "лёгкой в общении", "милой", "доброжелательной", "доверяющей", "спокойной"], fill: "ideals", fillLabel: "Мои идеалы, каждый с новой строки" },
+        ideals: true, fill: "ideals", fillLabel: "Мои идеалы, каждый с новой строки" },
       { pr: "Боже! Подскажи мне, как мне следует поступить в этой ситуации.", src: "с. 68, третий абзац" },
       { pr: "Боже! Помоги мне обрести правильные идеалы, чтобы Ты управлял мной во всех сложных ситуациях, чтобы мне обрести здравомыслие и поступать правильно.", src: "с. 69, второй абзац" },
       { step: "5. Признали перед Богом, собой и каким-либо другим человеком истинную природу наших заблуждений." },
@@ -320,7 +320,7 @@ body.covered #app, body.covered nav.tabs { visibility: hidden; }
     set(k, v) { try { localStorage.setItem(LS + k, JSON.stringify(v)); } catch {} },
     keys() { try { return Object.keys(localStorage).filter(k => k.startsWith(LS)).map(k => k.slice(LS.length)); } catch { return []; } },
   };
-  const state = { profile: { step3: "", contacts: [], name: "" }, days: {}, tab: "tune", sel: todayStr(), calMonth: null, loaded: false, prForm: false, prEdit: null, prDraft: "", fillEdit: null, fillDraft: "" };
+  const state = { profile: { step3: "", contacts: [], name: "" }, days: {}, tab: "tune", sel: todayStr(), calMonth: null, loaded: false, prForm: false, prEdit: null, prDraft: "", fillEdit: null, fillDraft: "", s3Edit: false };
 
   function loadLocal() {
     state.profile = Object.assign({ step3: "", contacts: [] }, ls.get("profile") || {});
@@ -348,6 +348,17 @@ body.covered #app, body.covered nav.tabs { visibility: hidden; }
 
   function counterHTML() {
     const s3 = state.profile.step3, today = todayStr();
+    if (s3 && state.s3Edit) return `
+      <section class="card">
+        <h2>Дата третьего шага</h2>
+        <label class="field" for="s3-first">Дата третьего шага
+          <input type="date" id="s3-first" value="${esc(s3)}" max="${today}">
+        </label>
+        <div class="row">
+          <button class="primary" id="s3-save">Сохранить</button>
+          <button class="ghost" id="s3-cancel">Отмена</button>
+        </div>
+      </section>`;
     if (!s3) return `
       <section class="card">
         <p class="eyebrow">С чего начать</p>
@@ -359,7 +370,7 @@ body.covered #app, body.covered nav.tabs { visibility: hidden; }
         <button class="primary" id="s3-save">Начать отсчёт</button>
       </section>`;
     const n = daysBetween(s3, today);
-    if (n < 0) return `<section class="counter"><p class="eyebrow">Третий шаг</p><p class="unit">Дата ${human(s3)} ещё впереди</p><p class="meta">Изменить её можно в разделе «Поддержка».</p></section>`;
+    if (n < 0) return `<section class="counter"><p class="eyebrow">Третий шаг</p><p class="unit">Дата ${human(s3)} ещё впереди</p><button class="ghost small" id="s3-change" style="justify-self: start">Изменить дату</button></section>`;
     return `
       <section class="counter" aria-label="Дни трезвости">
         <p class="eyebrow">Сегодня, ${human(today)}</p>
@@ -367,6 +378,7 @@ body.covered #app, body.covered nav.tabs { visibility: hidden; }
           <span class="num">${n.toLocaleString("ru-RU")}</span>
           <span class="unit">${plural(n, "день", "дня", "дней")} трезвости</span>
         </div>
+        <button class="ghost small" id="s3-change" style="justify-self: start; padding-inline: 0">Изменить дату третьего шага</button>
       </section>`;
   }
 
@@ -390,7 +402,7 @@ body.covered #app, body.covered nav.tabs { visibility: hidden; }
         <div>${MORNING.map((t, i) => `
           <label class="check" for="m${i}"><input type="checkbox" id="m${i}" data-m="${i}" ${d.morning[i] ? "checked" : ""}><span>${t}</span></label>`).join("")}
         </div>
-        <label class="field" for="m-note">Мой план и просьба на сегодня
+        <label class="field" for="m-note">Мой план и вопрос на сегодня
           <textarea id="m-note" rows="3" placeholder="Что сегодня важно? О чём я прошу?">${esc(d.morningNote)}</textarea>
         </label>
       </section>
@@ -407,7 +419,14 @@ body.covered #app, body.covered nav.tabs { visibility: hidden; }
       <section class="card">
         <div class="row between"><h2>Вечерний отчёт</h2><span class="status ${eDone ? "done" : ""}">${eDone ? "сделано" : "не начато"}</span></div>
         <p class="muted small">${EV_INTRO}</p>
-        ${state.profile.name ? "" : `<p class="small muted">Имя и город для шапки отчёта укажите в разделе «Поддержка» → «Настройки».</p>`}
+        <div class="row">
+          <label class="field" for="p-name" style="flex: 1 1 140px">Имя для отчёта
+            <input id="p-name" value="${esc(state.profile.name)}">
+          </label>
+          <label class="field" for="p-city" style="flex: 1 1 140px">Город
+            <input id="p-city" value="${esc(state.profile.city)}">
+          </label>
+        </div>
         ${EVENING.map(f => `
           <label class="q ${f.sub ? "sub" : ""}" for="e-${f.k}"><span>${f.q}${f.list && !f.q.endsWith("?") ? ":" : ""}</span>
             ${f.hint ? `<small class="muted">${f.hint}</small>` : ""}
@@ -423,7 +442,7 @@ body.covered #app, body.covered nav.tabs { visibility: hidden; }
         </div>
         <label class="q" for="e-sponsees"><span>Подспонсорные</span>
           <small class="muted">Список переносится из прошлого отчёта, поправьте при необходимости</small>
-          <textarea id="e-sponsees" data-e="sponsees" rows="3" placeholder="Татьяна В, Виктория А, …">${esc(evVal(d, "sponsees"))}</textarea>
+          <textarea id="e-sponsees" data-e="sponsees" rows="3">${esc(evVal(d, "sponsees"))}</textarea>
         </label>
         ${sendBtn("send-report", "Отправить отчёт спонсору", true)}
         <div id="report-out"></div>
@@ -509,10 +528,10 @@ body.covered #app, body.covered nav.tabs { visibility: hidden; }
     if (b.verse) return sayEl("p", "verse", esc(b.verse), b.verse);
     if (b.pr) {
       const v = fillVal(b), tok = `{${b.fill}}`;
-      const ideals = b.ideals && (v || b.ideals);
+      const ideals = b.ideals && v;
       const html = esc(b.pr).replace(tok, `<b class="fill">${v ? esc(v) : "__________"}</b>`);
       const text = b.pr.replace(tok, v || "…") + (ideals ? " " + ideals.join(", ") + "." : "");
-      return sayEl("div", "pr", `${html}${ideals ? `<span class="ideals"><br>${esc(ideals.join(" · "))}</span>` : ""}${src}`, text) + (b.fill ? fillEditor(b) : "");
+      return sayEl("div", "pr", `${html}${ideals ? `<span class="ideals"><br>${esc(ideals.join(" · "))}</span>` : b.ideals ? ` <b class="fill">__________</b>` : ""}${src}`, text) + (b.fill ? fillEditor(b) : "");
     }
     return sayEl("p", "", `${esc(b.p)}${src}`, b.p);
   }
@@ -520,16 +539,15 @@ body.covered #app, body.covered nav.tabs { visibility: hidden; }
   const fillVal = b => { const v = b.fill && (state.profile.fills || {})[b.fill]; return Array.isArray(v) ? (v.length ? v : null) : (v || ""); };
   function fillEditor(b) {
     const v = fillVal(b);
-    if (state.fillEdit !== b.fill) return `<button class="ghost small fill-btn" data-fill-edit="${b.fill}">${b.ideals ? "Изменить список" : v ? "Изменить" : "Вписать"}</button>`;
+    if (state.fillEdit !== b.fill) return `<button class="ghost small fill-btn" data-fill-edit="${b.fill}">${v ? (b.ideals ? "Изменить список" : "Изменить") : "Вписать"}</button>`;
     return `
       <div class="fill-edit">
         <label class="q" for="fill-input"><span>${esc(b.fillLabel)}</span>
-          ${b.ideals ? `<textarea id="fill-input" rows="8">${esc(state.fillDraft)}</textarea>` : `<input id="fill-input" value="${esc(state.fillDraft)}" placeholder="${esc(b.fillPh || "")}">`}
+          ${b.ideals ? `<textarea id="fill-input" rows="8">${esc(state.fillDraft)}</textarea>` : `<input id="fill-input" value="${esc(state.fillDraft)}">`}
         </label>
         <div class="row">
           <button class="primary" id="fill-save" data-fill="${b.fill}">Сохранить</button>
           <button class="ghost" id="fill-cancel">Отмена</button>
-          ${b.ideals && v ? `<button class="ghost" id="fill-reset" data-fill="${b.fill}">Вернуть список из книги</button>` : ""}
         </div>
       </div>`;
   }
@@ -798,14 +816,6 @@ body.covered #app, body.covered nav.tabs { visibility: hidden; }
       </section>
       <section class="card">
         <h2>Настройки</h2>
-        <div class="row">
-          <label class="field" for="p-name" style="flex: 1 1 140px">Имя для отчёта
-            <input id="p-name" value="${esc(state.profile.name)}" placeholder="Ольга">
-          </label>
-          <label class="field" for="p-city" style="flex: 1 1 140px">Город
-            <input id="p-city" value="${esc(state.profile.city)}" placeholder="Санкт-Петербург">
-          </label>
-        </div>
         <label class="field" for="p-gender">В отчёте писать
           <select id="p-gender">
             <option value="f" ${state.profile.gender !== "m" ? "selected" : ""}>«Благодарна за…»</option>
@@ -1049,17 +1059,17 @@ body.covered #app, body.covered nav.tabs { visibility: hidden; }
     if (t.id === "big-text") { setMeta({ big: !meta().big }); applyBig(); return render(); }
     if (t.dataset.fillEdit) {
       const b = fillBlock(t.dataset.fillEdit), v = fillVal(b);
-      Object.assign(state, { fillEdit: b.fill, fillDraft: b.ideals ? (v || b.ideals).join("\n") : v });
+      Object.assign(state, { fillEdit: b.fill, fillDraft: b.ideals ? (v || []).join("\n") : v });
       render(); const el = document.getElementById("fill-input"); el.scrollIntoView({ block: "center" }); el.focus(); return;
     }
     if (t.id === "fill-cancel") { Object.assign(state, { fillEdit: null, fillDraft: "" }); return render(); }
-    if (t.id === "fill-save" || t.id === "fill-reset") {
-      const b = fillBlock(t.dataset.fill), raw = t.id === "fill-reset" ? "" : document.getElementById("fill-input").value;
+    if (t.id === "fill-save") {
+      const b = fillBlock(t.dataset.fill), raw = document.getElementById("fill-input").value;
       const fills = state.profile.fills = state.profile.fills || {};
       if (b.ideals) { const list = raw.split(/[\n,]+/).map(x => x.trim()).filter(Boolean); list.length ? fills[b.fill] = list : delete fills[b.fill]; }
       else { const v = raw.trim(); v ? fills[b.fill] = v : delete fills[b.fill]; }
       saveProfile(); Object.assign(state, { fillEdit: null, fillDraft: "" }); render();
-      return toast(t.id === "fill-reset" ? "Список из книги возвращён" : "Сохранено");
+      return toast("Сохранено");
     }
     if (t.id === "pr-new" || t.dataset.predit) {
       const x = (state.profile.prayers || []).find(p => p.id === t.dataset.predit);
@@ -1085,8 +1095,12 @@ body.covered #app, body.covered nav.tabs { visibility: hidden; }
     if (t.id === "s3-save") {
       const v = document.getElementById("s3-first").value;
       if (!v) return toast("Выберите дату третьего шага");
-      state.profile.step3 = v; saveProfile(); render(); return;
+      const changed = state.s3Edit;
+      state.profile.step3 = v; state.s3Edit = false; saveProfile(); render();
+      return changed ? toast("Дата третьего шага сохранена") : undefined;
     }
+    if (t.id === "s3-change") { state.s3Edit = true; render(); document.getElementById("s3-first").focus(); return; }
+    if (t.id === "s3-cancel") { state.s3Edit = false; return render(); }
     if (t.id === "back-today") { state.sel = todayStr(); return render(); }
     if (t.id === "send-report") {
       syncFromDom();
