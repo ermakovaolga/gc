@@ -312,7 +312,6 @@ body.covered #app, body.covered nav.tabs { visibility: hidden; }
       { verse: "Помоги же мне, Господи,\nСделай руки мои продолжением Мира Твоего!" },
     ] },
   ];
-  const SOUNDS = [{ k: "waves", name: "Волны" }, { k: "birds", name: "Птицы" }];
 
   // ---------- хранилище ----------
   const LS = "dzd:";
@@ -588,12 +587,6 @@ body.covered #app, body.covered nav.tabs { visibility: hidden; }
         </div>
         <div class="chips">${[...TUNE.map(s => [s.id, s.short]), ["tmy", "Мои молитвы"]].map(([id, l]) => `<button class="chip" data-jump="${id}">${esc(l)}</button>`).join("")}</div>
       </section>
-      <section class="card" id="med">
-        <h2>Медитация</h2>
-        <p class="muted small">Звуки природы создаются прямо в телефоне, интернет не нужен. Если звука нет, выключите беззвучный режим.</p>
-        <div class="chips">${SOUNDS.map(x => `<button class="chip" data-sound="${x.k}" aria-pressed="${med?.kind === x.k}">${x.name}</button>`).join("")}</div>
-        <button id="med-stop" ${med ? "" : "hidden"}>Остановить</button>
-      </section>
       ${html}
       ${backupBanner()}`;
   }
@@ -650,137 +643,20 @@ body.covered #app, body.covered nav.tabs { visibility: hidden; }
     if (scroll && (r.top < 0 || r.bottom > innerHeight - 160)) el.scrollIntoView({ behavior: "smooth", block: "center" });
   }
 
-  // ----- медитация: звуки природы синтезируются через Web Audio, без файлов и без сети -----
-  let actx = null, pinkBuf = null, med = null;
-  function audio() {
-    if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
-    if (actx.state !== "running") actx.resume().catch(() => {});
-    return actx;
-  }
-  const rnd = (a, b) => a + Math.random() * (b - a);
-  const gainN = (c, v) => { const g = c.createGain(); g.gain.value = v; return g; };
-  const filt = (c, type, freq, q) => { const f = c.createBiquadFilter(); f.type = type; f.frequency.value = freq; if (q) f.Q.value = q; return f; };
-  // Розовый шум, 6 секунд по кругу; конец плавно перетекает в начало, чтобы не было щелчка на стыке
-  function pink(c) {
-    if (pinkBuf) return pinkBuf;
-    const len = c.sampleRate * 6, fade = Math.floor(c.sampleRate * 0.1), tmp = new Float32Array(len + fade);
-    let b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;
-    for (let i = 0; i < tmp.length; i++) {
-      const w = Math.random() * 2 - 1;
-      b0 = 0.99886 * b0 + w * 0.0555179; b1 = 0.99332 * b1 + w * 0.0750759; b2 = 0.969 * b2 + w * 0.153852;
-      b3 = 0.8665 * b3 + w * 0.3104856; b4 = 0.55 * b4 + w * 0.5329522; b5 = -0.7616 * b5 - w * 0.016898;
-      tmp[i] = (b0 + b1 + b2 + b3 + b4 + b5 + b6 + w * 0.5362) * 0.11; b6 = w * 0.115926;
-    }
-    pinkBuf = c.createBuffer(1, len, c.sampleRate);
-    const d = pinkBuf.getChannelData(0);
-    for (let i = 0; i < len; i++) d[i] = i < fade ? tmp[i] * (i / fade) + tmp[len + i] * (1 - i / fade) : tmp[i];
-    return pinkBuf;
-  }
-  function noise(m, out) {
-    const s = m.c.createBufferSource();
-    s.buffer = pink(m.c); s.loop = true; s.connect(out); s.start(0, Math.random() * 5);
-    m.srcs.push(s);
-  }
-  // Плавно сменить значение параметра от текущего к целевому
-  function glide(p, c, to, sec, exp) {
-    const t = c.currentTime;
-    p.cancelScheduledValues(t); p.setValueAtTime(p.value, t);
-    exp ? p.exponentialRampToValueAtTime(to, t + sec) : p.linearRampToValueAtTime(to, t + sec);
-  }
-
-  function startSound(kind) {
-    stopSound(true);
-    let c;
-    try { c = audio(); } catch { return toast("Звук на этом устройстве недоступен"); }
-    const master = gainN(c, 0);
-    master.connect(c.destination);
-    master.gain.setTargetAtTime(1, c.currentTime, 1);
-    const m = med = { kind, c, master, srcs: [], timers: new Set(), start: Date.now() };
-    const later = (fn, ms) => { const id = setTimeout(() => { m.timers.delete(id); if (med === m) fn(); }, ms); m.timers.add(id); };
-
-    if (kind === "waves") {
-      // ровный гул моря и набегающие волны: громкость и яркость шума то нарастают, то спадают
-      const bedF = filt(c, "lowpass", 320), bed = gainN(c, 0.3);
-      bedF.connect(bed); bed.connect(master); noise(m, bedF);
-      const surfF = filt(c, "lowpass", 400), surf = gainN(c, 0.05);
-      surfF.connect(surf); surf.connect(master); noise(m, surfF);
-      const wave = () => {
-        const dur = rnd(6, 10), up = dur * rnd(0.35, 0.5);
-        glide(surf.gain, c, rnd(0.6, 0.95), up);
-        glide(surfF.frequency, c, rnd(1200, 2400), up, true);
-        later(() => { glide(surf.gain, c, 0.05, dur - up); glide(surfF.frequency, c, 380, dur - up, true); }, up * 1000);
-        later(wave, dur * 1000 * rnd(0.85, 1));
-      };
-      wave();
-    }
-    if (kind === "birds") {
-      // тихий ветер в листве, на нём перекличка птиц с лёгким эхом
-      const windF = filt(c, "bandpass", 600, 0.7), wind = gainN(c, 0.12);
-      windF.connect(wind); wind.connect(master); noise(m, windF);
-      const breeze = () => { wind.gain.setTargetAtTime(rnd(0.06, 0.18), c.currentTime, 2); later(breeze, rnd(4000, 8000)); };
-      breeze();
-      const bus = gainN(c, 1), delay = c.createDelay(1), fb = gainN(c, 0.3), wet = gainN(c, 0.35), damp = filt(c, "lowpass", 3000);
-      delay.delayTime.value = 0.14;
-      bus.connect(master); bus.connect(delay); delay.connect(damp); damp.connect(fb); fb.connect(delay); damp.connect(wet); wet.connect(master);
-      const phrase = () => {
-        const type = Math.floor(Math.random() * 3), base = rnd(2200, 4200), out = gainN(c, rnd(0.25, 0.6));
-        if (c.createStereoPanner) { const p = c.createStereoPanner(); p.pan.value = rnd(-0.8, 0.8); out.connect(p); p.connect(bus); } else out.connect(bus);
-        let t = c.currentTime + 0.05;
-        const n = type === 2 ? 1 : Math.floor(rnd(2, 7));
-        for (let k = 0; k < n; k++) {
-          const o = c.createOscillator(), g = gainN(c, 0);
-          o.type = "sine"; o.connect(g); g.connect(out);
-          let dur;
-          if (type === 0) { dur = rnd(0.12, 0.22); o.frequency.setValueAtTime(base * rnd(1.1, 1.3), t); o.frequency.exponentialRampToValueAtTime(base * rnd(0.6, 0.8), t + dur); }
-          else if (type === 1) { dur = rnd(0.04, 0.08); o.frequency.setValueAtTime(base * 0.8, t); o.frequency.exponentialRampToValueAtTime(base * rnd(1.2, 1.5), t + dur); }
-          else {
-            dur = rnd(0.6, 1.2); o.frequency.value = base;
-            const l = c.createOscillator(), lg = gainN(c, base * 0.08);
-            l.frequency.value = rnd(18, 30); l.connect(lg); lg.connect(o.frequency); l.start(t); l.stop(t + dur + 0.05);
-          }
-          g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(0.2, t + Math.min(0.02, dur / 3)); g.gain.exponentialRampToValueAtTime(0.001, t + dur);
-          o.start(t); o.stop(t + dur + 0.02);
-          t += dur + (type === 1 ? rnd(0.04, 0.1) : rnd(0.08, 0.25));
-        }
-        later(phrase, (t - c.currentTime) * 1000 + rnd(600, 4500));
-      };
-      phrase();
-    }
-    updateControls();
-  }
-  function stopSound(quick) {
-    if (!med) return;
-    const m = med; med = null;
-    m.timers.forEach(clearTimeout);
-    glide(m.master.gain, m.c, 0, quick ? 0.3 : 2);
-    setTimeout(() => { m.srcs.forEach(s => { try { s.stop(); } catch {} }); m.master.disconnect(); }, quick ? 400 : 2200);
-    updateControls();
-  }
-  const mmss = ms => { const s = Math.max(0, Math.round(ms / 1000)); return `${Math.floor(s / 60)}:${pad(s % 60)}`; };
-  const medTime = () => mmss(Date.now() - med.start);
-  setInterval(() => {
-    if (!med) return;
-    const el = document.getElementById("pl-time"); if (el) el.textContent = medTime();
-  }, 1000);
-
-  // Кнопки на вкладке и панель «сейчас звучит» над вкладками (видна из любого раздела)
+  // Панель «сейчас звучит» над вкладками (видна из любого раздела)
   const player = document.getElementById("player");
   function updateControls() {
     const sa = document.getElementById("say-all"); if (sa) sa.textContent = speech.on ? "■ Остановить чтение" : "▶ Слушать вслух";
-    app.querySelectorAll("[data-sound]").forEach(b => b.setAttribute("aria-pressed", String(med?.kind === b.dataset.sound)));
-    const ms = document.getElementById("med-stop"); if (ms) ms.hidden = !med;
-    const on = !!med || speech.on;
+    const on = speech.on;
     player.hidden = !on;
     document.body.classList.toggle("playing", on);
     player.innerHTML = on ? `<div class="in">
-      ${med ? `<span>${SOUNDS.find(x => x.k === med.kind).name} · <span id="pl-time">${medTime()}</span></span><button data-pl="med-stop">Стоп</button>` : ""}
       ${speech.on ? `<span>Чтение вслух${speech.paused ? " · пауза" : ""}</span><button data-pl="say-pause">${speech.paused ? "Дальше" : "Пауза"}</button><button data-pl="say-stop">Стоп</button>` : ""}
     </div>` : "";
   }
   player.addEventListener("click", e => {
     const b = e.target.closest("button[data-pl]");
     if (!b) return;
-    if (b.dataset.pl === "med-stop") stopSound(false);
     if (b.dataset.pl === "say-pause") pauseSpeech();
     if (b.dataset.pl === "say-stop") stopSpeech();
   });
@@ -1170,8 +1046,6 @@ body.covered #app, body.covered nav.tabs { visibility: hidden; }
     if (t.id === "say-all") return speech.on ? stopSpeech() : speakFrom(0);
     if (t.dataset.sayFrom) return speakFrom(SAY_AT[t.dataset.sayFrom] ?? 0);
     if (t.dataset.jump) { document.getElementById(t.dataset.jump)?.scrollIntoView({ behavior: "smooth", block: "start" }); return; }
-    if (t.dataset.sound) return med?.kind === t.dataset.sound ? stopSound(false) : startSound(t.dataset.sound);
-    if (t.id === "med-stop") return stopSound(false);
     if (t.id === "big-text") { setMeta({ big: !meta().big }); applyBig(); return render(); }
     if (t.dataset.fillEdit) {
       const b = fillBlock(t.dataset.fillEdit), v = fillVal(b);
