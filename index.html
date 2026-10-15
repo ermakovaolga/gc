@@ -145,6 +145,9 @@ nav.tabs button { border: 0; border-radius: 0; background: transparent; padding:
 .verse { font-family: var(--display); font-size: 1.05rem; white-space: pre-line; }
 .tune-text .li.sub { padding-left: 1.2em; }
 .ideals { color: var(--muted); font-size: 0.95rem; font-family: var(--body); }
+.pr .fill { color: var(--accent); font-weight: 600; }
+.fill-btn { justify-self: start; margin-top: -6px; }
+.fill-edit { display: grid; gap: 8px; padding: 12px; border-radius: 14px; background: var(--lemon-soft); }
 [data-say].reading { background: var(--lemon-soft); border-radius: 6px; box-shadow: 0 0 0 6px var(--lemon-soft); transition: background-color .4s, box-shadow .4s; }
 #player { border-bottom: 1px solid var(--line); }
 #player .in { max-width: 560px; margin: 0 auto; padding: 8px 16px; display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; font-size: 0.9rem; }
@@ -232,12 +235,13 @@ body.covered #app, body.covered nav.tabs { visibility: hidden; }
 
   // ---------- «Настрой на день»: тексты для чтения подряд ----------
   // Блоки: p — абзац, h — подзаголовок, li — пункт списка (sub — вложенный), step — формулировка шага,
-  // pr — молитва (src — где в книге, ideals — перечень после молитвы), verse — стихи с переносами строк.
+  // pr — молитва (src — где в книге, ideals — перечень после молитвы, fill — что человек вписывает сам: {ключ} в тексте или свой список идеалов),
+  // verse — стихи с переносами строк.
   // Каждый блок читается вслух отдельно; src вслух не читается.
   const TUNE = [
     { id: "t11", title: "11-ый шаг", short: "11-ый шаг", blocks: [
       { h: "Утро" },
-      { p: "Проснувшись утром, надо подумать о предстоящих 24 часах жизни. Рассмотрим наши планы на день. В самом начале дня мы просим Бога направить наши помыслы в верное русло, уберечь нас от жалости к себе, бесчестных поступков, корыстолюбия.", src: "с. 83" },
+      { p: "Проснувшись утром, надо подумать о предстоящих 24-х часах жизни. Рассмотрим наши планы на день. В самом начале дня мы просим Бога направить наши помыслы в верное русло, уберечь нас от жалости к себе, бесчестных поступков, корыстолюбия.", src: "с. 83" },
       { p: "Размышляя о предстоящем дне, мы можем испытывать неуверенность. Может быть, мы не способны решить, какие действия предпринять. Мы должны просить вдохновения у Бога, чтобы у нас появились интуитивные мысли или решения. Мы успокаиваемся и не нервничаем. Мы ни с кем и ни с чем не боремся.", src: "с. 84" },
       { p: "Мы заканчиваем период углублённого размышления молитвой, чтобы нам открылось, каким должен быть наш следующий шаг, и чтобы нам было дано всё то, что необходимо для решения наших проблем.", src: "с. 84" },
       { h: "Весь день" },
@@ -252,10 +256,10 @@ body.covered #app, body.covered nav.tabs { visibility: hidden; }
       { step: "3. Приняли решение препоручить нашу волю и нашу жизнь заботе Бога, как мы Его понимали." },
       { pr: "Господи, я предаю себя Тебе, чтобы Ты создавал и творил со мной, как Тебе угодно. Освободи меня от оков эгоизма, чтобы я выполняла Твою волю. Удали всё то, что тяготит меня, чтобы эта победа была свидетельством для тех, кому я могла бы помочь и помогу Твоею силой, Твоей любовью, Твоим путём в жизни. Да исполняю я Твою волю всегда!", src: "с. 61" },
       { step: "4. Сделали глубокую и бесстрашную моральную инвентаризацию самих себя." },
-      { pr: "Боже, покажи мне, как мне относиться к (__________) с той же толерантностью, с тем же состраданием и терпением, с которыми я с радостью отнеслась бы к больному другу. Это больной человек. Как я могу быть полезна для него? Господи, спаси меня от злости на него. Да исполнится воля Твоя!", src: "с. 65" },
-      { pr: "Боже! Избавь меня от страха (страхов) __________ и направь моё внимание на то, какой мне, согласно Твоей воле, надлежит быть!", src: "с. 67" },
+      { pr: "Боже, покажи мне, как мне относиться к {resent} с той же толерантностью, с тем же состраданием и терпением, с которыми я с радостью отнеслась бы к больному другу. Это больной человек. Как я могу быть полезна для него? Господи, спаси меня от злости на него. Да исполнится воля Твоя!", src: "с. 65", fill: "resent", fillLabel: "К кому", fillPh: "имя человека" },
+      { pr: "Боже! Избавь меня от страха (страхов) {fears} и направь моё внимание на то, какой мне, согласно Твоей воле, надлежит быть!", src: "с. 67", fill: "fears", fillLabel: "Мои страхи", fillPh: "например: остаться одной, потерять работу" },
       { pr: "Боже! Помоги мне выработать идеалы и жить в соответствии с ними. Я хочу быть:", src: "с. 68, второй абзац",
-        ideals: ["любящей", "терпеливой", "нежной", "слушающей", "бескорыстной", "отдающей", "безопасной", "понимающей", "ответственной", "внимательной", "весёлой", "здоровой", "здравомыслящей", "заинтересованной", "верной", "преданной", "надёжной", "честной", "семейной", "доброй", "трудолюбивой", "лёгкой в общении", "милой", "доброжелательной", "доверяющей", "спокойной"] },
+        ideals: ["любящей", "терпеливой", "нежной", "слушающей", "бескорыстной", "отдающей", "безопасной", "понимающей", "ответственной", "внимательной", "весёлой", "здоровой", "здравомыслящей", "заинтересованной", "верной", "преданной", "надёжной", "честной", "семейной", "доброй", "трудолюбивой", "лёгкой в общении", "милой", "доброжелательной", "доверяющей", "спокойной"], fill: "ideals", fillLabel: "Мои идеалы, каждый с новой строки" },
       { pr: "Боже! Подскажи мне, как мне следует поступить в этой ситуации.", src: "с. 68, третий абзац" },
       { pr: "Боже! Помоги мне обрести правильные идеалы, чтобы Ты управлял мной во всех сложных ситуациях, чтобы мне обрести здравомыслие и поступать правильно.", src: "с. 69, второй абзац" },
       { step: "5. Признали перед Богом, собой и каким-либо другим человеком истинную природу наших заблуждений." },
@@ -317,7 +321,7 @@ body.covered #app, body.covered nav.tabs { visibility: hidden; }
     set(k, v) { try { localStorage.setItem(LS + k, JSON.stringify(v)); } catch {} },
     keys() { try { return Object.keys(localStorage).filter(k => k.startsWith(LS)).map(k => k.slice(LS.length)); } catch { return []; } },
   };
-  const state = { profile: { step3: "", contacts: [], name: "" }, days: {}, tab: "tune", sel: todayStr(), calMonth: null, loaded: false, prForm: false, prEdit: null, prDraft: "" };
+  const state = { profile: { step3: "", contacts: [], name: "" }, days: {}, tab: "tune", sel: todayStr(), calMonth: null, loaded: false, prForm: false, prEdit: null, prDraft: "", fillEdit: null, fillDraft: "" };
 
   function loadLocal() {
     state.profile = Object.assign({ step3: "", contacts: [] }, ls.get("profile") || {});
@@ -505,9 +509,34 @@ body.covered #app, body.covered nav.tabs { visibility: hidden; }
     if (b.step) return sayEl("p", "step-w", esc(b.step), b.step);
     if (b.li) return sayEl("p", `li ${b.sub ? "sub" : ""}`, esc(b.li), b.li);
     if (b.verse) return sayEl("p", "verse", esc(b.verse), b.verse);
-    if (b.pr) return sayEl("div", "pr", `${esc(b.pr)}${b.ideals ? `<span class="ideals"><br>${esc(b.ideals.join(" · "))}</span>` : ""}${src}`, b.pr + (b.ideals ? " " + b.ideals.join(", ") + "." : ""));
+    if (b.pr) {
+      const v = fillVal(b), tok = `{${b.fill}}`;
+      const ideals = b.ideals && (v || b.ideals);
+      const html = esc(b.pr).replace(tok, `<b class="fill">${v ? esc(v) : "__________"}</b>`);
+      const text = b.pr.replace(tok, v || "…") + (ideals ? " " + ideals.join(", ") + "." : "");
+      return sayEl("div", "pr", `${html}${ideals ? `<span class="ideals"><br>${esc(ideals.join(" · "))}</span>` : ""}${src}`, text) + (b.fill ? fillEditor(b) : "");
+    }
     return sayEl("p", "", `${esc(b.p)}${src}`, b.p);
   }
+  // Вписанное в молитвы хранится в profile.fills: строки для {resent}/{fears}, массив для идеалов
+  const fillVal = b => { const v = b.fill && (state.profile.fills || {})[b.fill]; return Array.isArray(v) ? (v.length ? v : null) : (v || ""); };
+  function fillEditor(b) {
+    const v = fillVal(b);
+    if (state.fillEdit !== b.fill) return `<button class="ghost small fill-btn" data-fill-edit="${b.fill}">${b.ideals ? "Изменить список" : v ? "Изменить" : "Вписать"}</button>`;
+    return `
+      <div class="fill-edit">
+        <label class="q" for="fill-input"><span>${esc(b.fillLabel)}</span>
+          ${b.ideals ? `<textarea id="fill-input" rows="8">${esc(state.fillDraft)}</textarea>` : `<input id="fill-input" value="${esc(state.fillDraft)}" placeholder="${esc(b.fillPh || "")}">`}
+        </label>
+        <div class="row">
+          <button class="primary" id="fill-save" data-fill="${b.fill}">Сохранить</button>
+          <button class="ghost" id="fill-cancel">Отмена</button>
+          ${b.ideals && v ? `<button class="ghost" id="fill-reset" data-fill="${b.fill}">Вернуть список из книги</button>` : ""}
+        </div>
+      </div>`;
+  }
+  const fillBlock = key => TUNE.flatMap(s => s.blocks).find(b => b.fill === key);
+
   function tuneSection(s) {
     SAY_AT[s.id] = SAY.length;
     return `
@@ -1145,6 +1174,20 @@ body.covered #app, body.covered nav.tabs { visibility: hidden; }
     if (t.dataset.sound) return med?.kind === t.dataset.sound ? stopSound(false) : startSound(t.dataset.sound);
     if (t.id === "med-stop") return stopSound(false);
     if (t.id === "big-text") { setMeta({ big: !meta().big }); applyBig(); return render(); }
+    if (t.dataset.fillEdit) {
+      const b = fillBlock(t.dataset.fillEdit), v = fillVal(b);
+      Object.assign(state, { fillEdit: b.fill, fillDraft: b.ideals ? (v || b.ideals).join("\n") : v });
+      render(); const el = document.getElementById("fill-input"); el.scrollIntoView({ block: "center" }); el.focus(); return;
+    }
+    if (t.id === "fill-cancel") { Object.assign(state, { fillEdit: null, fillDraft: "" }); return render(); }
+    if (t.id === "fill-save" || t.id === "fill-reset") {
+      const b = fillBlock(t.dataset.fill), raw = t.id === "fill-reset" ? "" : document.getElementById("fill-input").value;
+      const fills = state.profile.fills = state.profile.fills || {};
+      if (b.ideals) { const list = raw.split(/[\n,]+/).map(x => x.trim()).filter(Boolean); list.length ? fills[b.fill] = list : delete fills[b.fill]; }
+      else { const v = raw.trim(); v ? fills[b.fill] = v : delete fills[b.fill]; }
+      saveProfile(); Object.assign(state, { fillEdit: null, fillDraft: "" }); render();
+      return toast(t.id === "fill-reset" ? "Список из книги возвращён" : "Сохранено");
+    }
     if (t.id === "pr-new" || t.dataset.predit) {
       const x = (state.profile.prayers || []).find(p => p.id === t.dataset.predit);
       Object.assign(state, { prForm: true, prEdit: x ? x.id : null, prDraft: x ? x.text : "" });
@@ -1253,6 +1296,7 @@ body.covered #app, body.covered nav.tabs { visibility: hidden; }
     else if (t.dataset.e !== undefined) { d().evening[t.dataset.e] = t.value; saveDay(state.sel); }
     else if (t.dataset.t) { state.draft[t.dataset.t] = t.value; }
     else if (t.id === "pr-text") { state.prDraft = t.value; }
+    else if (t.id === "fill-input") { state.fillDraft = t.value; }
     else if (t.id === "p-name" || t.id === "p-city") { state.profile[t.id.slice(2)] = t.value.trim(); saveProfile(); }
   });
   app.addEventListener("focusout", e => { if (e.target.matches("textarea")) refreshStatus(); });
